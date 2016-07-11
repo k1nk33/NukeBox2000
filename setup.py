@@ -12,6 +12,34 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'Click>=6.0',
     # TODO: put package requirements here
+    'pip==8.1.2',
+    'bumpversion==0.5.3',
+    'wheel==0.29.0',
+    'watchdog==0.8.3',
+    'flake8==2.6.0',
+    'tox==2.3.1',
+    'coverage==4.1',
+    'Sphinx==1.4.4',
+    'cryptography', # Problem here, need libssl-dev
+    'PyYAML==3.11',
+    'enum34==1.1.6',
+    'id3reader==1.53.20070415',
+    'idna==2.1',
+    'ipaddress==1.0.16',
+    'ndg-httpsclient==0.4.0',
+    'mutagen==1.31',
+    'pyasn1==0.1.9',
+    'pycparser==2.14',
+    'pyOpenSSL',
+    'pymongo==3.2.2',
+    'requests[security]',
+    'six>=1.10.0',
+    'Twisted>=16.2.0',
+    'zope.interface>=4.1.3',
+    'python-vlc',
+    'pyacoustid',
+    'musicbrainzngs',
+    'service_identity'
 ]
 
 test_requirements = [

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import click
+from nukebox2000 import main as nb_main
 
 @click.command()
 def main(args=None):
@@ -11,4 +12,4 @@ def main(args=None):
 
 
 if __name__ == "__main__":
-    main()
+    nb_main()
