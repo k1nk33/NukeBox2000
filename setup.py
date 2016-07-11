@@ -22,7 +22,7 @@ requirements = [
     'Sphinx==1.4.4',
     'cryptography>=1.4', # Problem here, need libssl-dev
     'cffi', # Problem here, need ligffi-dev
-    'PyYAML==3.11',
+    'PyYAML',
     'enum34==1.1.6',
     'id3reader==1.53.20070415',
     'idna==2.1',
