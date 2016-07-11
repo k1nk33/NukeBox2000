@@ -490,8 +490,11 @@ class NewFile():
 
             # # Program can hit error here - TCON etc.
 
-            self.file_data['genre'] = str(media['TCON'].text[0]) or None
-            self.file_data['album'] = str(media['TALB'].text[0]) or None
+	    if 'TCON' in media:
+            	self.file_data['genre'] = str(media['TCON'].text[0])
+            
+	    if 'TALB' in media:
+                self.file_data['album'] = str(media['TALB'].text[0])
 
             # Check for Embedded Cover Art
             art = False

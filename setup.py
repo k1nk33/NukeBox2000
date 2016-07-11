@@ -20,7 +20,8 @@ requirements = [
     'tox==2.3.1',
     'coverage==4.1',
     'Sphinx==1.4.4',
-    'cryptography', # Problem here, need libssl-dev
+    'cryptography>=1.4', # Problem here, need libssl-dev
+    'cffi', # Problem here, need ligffi-dev
     'PyYAML==3.11',
     'enum34==1.1.6',
     'id3reader==1.53.20070415',
