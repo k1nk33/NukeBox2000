@@ -174,7 +174,7 @@ class NukeBoxProtocol(LineReceiver):
         if currentPercent >= 100:
 
             # Create the Path to the Sandboxed Copy of the File
-            self.temp_f_name = self.factory.temp + self.fname
+            self.temp_f_name = os.path.join(self.factory.temp, self.fname)
 
             # Open the Temp File & Write the Data from the Buffer
             f = open(self.temp_f_name, 'wb+')
@@ -384,6 +384,8 @@ class NukeBoxFactory(protocol.ServerFactory):
         # If the "Func" key is "File"
         if data['func'] == 'file':
 
+            # Look into os path spliT !!!
+
             # Parse the Filename
             fname = data["filename"].split('/')
 
@@ -490,10 +492,10 @@ class NewFile():
 
             # # Program can hit error here - TCON etc.
 
-	    if 'TCON' in media:
-            	self.file_data['genre'] = str(media['TCON'].text[0])
-            
-	    if 'TALB' in media:
+            if 'TCON' in media:
+                self.file_data['genre'] = str(media['TCON'].text[0])
+
+            if 'TALB' in media:
                 self.file_data['album'] = str(media['TALB'].text[0])
 
             # Check for Embedded Cover Art
@@ -585,7 +587,7 @@ class NewFile():
         album = re.sub('[^\w\-_\.]', '-', self.file_data['album'])
 
         # Path to the Validated File
-        dst = self.factory.dir + track + '.mp3'
+        dst = os.path.join(self.factory.dir, track + '.mp3')
 
         # If the File does not exist in the Default Directory, Create It
         if not os.path.isfile(dst):
@@ -597,10 +599,7 @@ class NewFile():
         if not self.meta:  # self.file_data['art'] is not None:
 
             # Build the Path to Cover Art file
-            art_file = '{}{}.jpeg'.format(
-                self.factory.art_dir,
-                album
-            )
+            art_file = os.path.join(self.factory.art_dir, album + '.jpeg')
 
             # If it Does Not Exists, Create it
             if not os.path.isfile(art_file):
@@ -685,7 +684,47 @@ def main():
     Main function
     '''
 
+    def makeDir(_dir, permission):
+        '''
+        '''
+
+        try:
+            original_umask = os.umask(0)
+            os.makedirs(_dir, permission)
+
+        finally:
+            os.umask(original_umask)
+
     vlc_instance = vlc.Instance()
+
+    # Create the Double Ended Queue (Deque)
+    q = NukeBoxQueue()
+
+    # Create a Reference to the Users Home Dir
+    HOME = os.path.expanduser('~')
+
+    # Create a String for the Default & Temporary Save Locations
+    default_dir = os.path.join(HOME, 'Music/NukeBox2000')
+    temp_dir = '/tmp/NukeBox2000/'
+    art_dir = os.path.join(HOME, 'Music/NukeBox2000/art')
+
+    # If Default Location Does not Exist, Create it
+    if not os.path.isdir(default_dir):
+
+        makeDir(default_dir, 0755)
+        # os.makedirs(default_dir)
+
+    # If Temporary Location Does not Exist, Create it
+    if not os.path.isdir(temp_dir):
+
+        makeDir(temp_dir, 0755)
+        # os.makedirs(temp_dir)
+
+    # If the Art Dir Does Not Exist
+    if not os.path.isdir(art_dir):
+
+        makeDir(art_dir, 0755)
+        # os.makedirs(art_dir)
 
     def playBack(f):
 
@@ -761,29 +800,6 @@ def main():
         f.running = False
         reactor.stop()
 
-    # Create the Double Ended Queue (Deque)
-    q = NukeBoxQueue()
-
-    # Create a Reference to the Users Home Dir
-    HOME = os.path.expanduser('~')
-
-    # Create a String for the Default & Temporary Save Locations
-    default_dir = HOME + '/Music/NukeBox2000/'
-    temp_dir = '/tmp/NukeBox2000/'
-    art_dir = default_dir + '/art/'
-
-    # If Default Location Does not Exist, Create it
-    if not os.path.isdir(default_dir):
-        os.makedirs(default_dir)
-
-    # If Temporary Location Does not Exist, Create it
-    if not os.path.isdir(temp_dir):
-        os.makedirs(temp_dir)
-
-    # If the Art Dir Does Not Exist
-    if not os.path.isdir(art_dir):
-        os.makedirs(art_dir)
-
     # Create the Factory Instance
     f = NukeBoxFactory(q, default_dir, temp_dir, art_dir)
 
@@ -809,14 +825,7 @@ def main():
     # Run the Reactor
     reactor.run()
 
-    print('Deleting Thread - Before:\n{}'.format(pb))
-
-    # del(pb)
-
-    print('Deleting Thread - Done!')
-
-    for thread in f.threads:
-        del(thread)
 
 if __name__ == '__main__':
+
     main()
