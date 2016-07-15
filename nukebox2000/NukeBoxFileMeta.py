@@ -109,17 +109,18 @@ class NukeBoxMeta:
         # Must return a Deferred
         return d
 
+    # Parse Response
     def parseDetails(self, data):
         '''
         B{Metadata Parsing method}
-        
-        Parses the details retrieved by the fingerPrint method
 
-        - Requires json loaded, AcoustID Response Object as an argument (data)
-        - Returns a Deferred, d
-        - Fires deferred callback chain on success
-        - Fires deferred errback chain on failure
+          - Parses the details (data) retrieved by the fingerPrint method
+          - Requires json loaded, AcoustID Response obj. as an argument (data)
+          - Returns a Deferred, d
+          - Fires deferred callback chain on success
+          - Fires deferred errback chain on failure
         '''
+
         self.Logger.msg('Parsing Details')
 
         d = defer.Deferred()
@@ -194,7 +195,17 @@ class NukeBoxMeta:
 
         return d
 
+    # Metadata Cover Art
     def metaData(self, meta):
+        '''
+        B{Cover Art Metadata Method}
+
+          - Is called with Cover Art (cover_result -> meta) via Parse Details
+          - Forms part of the Deferred Callback chain
+          - Returns data (dict)
+        '''
+
+        self.Logger.msg('Parsing Cover Metadata')
 
         covers = []
 
@@ -202,9 +213,7 @@ class NukeBoxMeta:
 
             if "Front" in image["types"] and image["approved"]:
 
-                print('\n{} is an approved front image!\n\n'.format(
-                    image["thumbnails"]["large"])
-                )
+                self.Logger.msg('Approved front image found :)')
 
                 covers.append(image["thumbnails"]["large"])
 
@@ -215,6 +224,11 @@ class NukeBoxMeta:
     # MBrainz/Parser Fail
     def parseFail(self, failure):
         '''
+        B{Parse Failure Method}
+
+          - Forms part of the Deferred Errback chain
+          - Called with the a twisted failure obj. (exception)
+          - Raises exception
         '''
 
         print('Failure: {}'.format(failure))
@@ -223,6 +237,11 @@ class NukeBoxMeta:
     # FingerPrint Failure
     def fpFail(self, failure):
         '''
+        B{Fingerprint Failure Method}
+
+          - Forms part of the Deferred Errback chain
+          - Called with a twisted failure obj. (exception)
+          - Raises 
         '''
 
         print('Something Happened with FingerPrinting!\n{}'.format(
@@ -233,14 +252,18 @@ class NukeBoxMeta:
 
 if __name__ == '__main__':
 
+    from twisted.python import log as Logger
+
+    nbm = NukeBoxMeta(Logger)
+
     # Print Tests
     def printResult(result):
 
         if result:
-            print(result)
+            Logger.msg('Result Success :)')
 
         else:
-            print('Failed')
+            Logger.err('Result Failed :(')
 
         reactor.stop()
 
@@ -253,7 +276,6 @@ if __name__ == '__main__':
         # path = '/home/darren/Development/Testing/ImageURLs/unknown3.mp3'
         # path = '/home/darren/Development/Testing/ImageURLs/unknown4.mp3'
 
-        nbm = NukeBoxMeta()
 
         d = nbm.fingerPrint(path)
         d.addCallback(json.loads)
