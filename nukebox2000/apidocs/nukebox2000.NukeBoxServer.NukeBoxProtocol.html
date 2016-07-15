@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <title>nukebox2000.NukeBoxServer.NukeBoxProtocol : API documentation</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <link type="text/css" href="apidocs.css" rel="stylesheet" />
+    
+    
+  </head>
+  <body>
+    <h1 class="class">n.N.NukeBoxProtocol(<span title="twisted.protocols.basic.LineReceiver">LineReceiver</span>) : class documentation</h1>
+    <p>
+      <span id="part">Part of <a href="nukebox2000.html">nukebox2000</a>.<a href="nukebox2000.NukeBoxServer.html">NukeBoxServer</a></span>
+      
+      <a href="classIndex.html#nukebox2000.NukeBoxServer.NukeBoxProtocol">View In Hierarchy</a>
+    </p>
+    <div>
+      
+    </div>
+    <div class="docstring">
+      <div><p><b>NukeBox 2000 Protocol Class</b></p>
+<ul>
+  <li>
+    Main Nukebox Protocol
+  </li>
+  <li>
+    Responsible for:
+    <ul>
+      <li>
+        File Transfer
+      </li>
+      <li>
+        DB Access
+      </li>
+      <li>
+        Queuing
+      </li>
+      <li>
+        Error Checking
+      </li>
+    </ul>
+  </li>
+</ul><table class="fieldTable"></table></div>
+    </div>
+
+    
+    <div id="splitTables">
+      <table class="children sortable" id="id7">
+  
+  
+  <tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxProtocol.html#__init__">__init__</a></td>
+    <td><span>Protocol Constructor</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxProtocol.html#connectionMade">connectionMade</a></td>
+    <td><span><b>Server</b> receives a new connection</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxProtocol.html#connectionLost">connectionLost</a></td>
+    <td><span><b>Server</b> loses a connection</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxProtocol.html#lineReceived">lineReceived</a></td>
+    <td><span><b>Incoming</b> Line Data</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxProtocol.html#rawDataReceived">rawDataReceived</a></td>
+    <td><span><b>Raw</b> File data</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxProtocol.html#bufferFile">bufferFile</a></td>
+    <td><span><b>Buffering</b> Raw Data</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxProtocol.html#sendData">sendData</a></td>
+    <td><span><b>Pickle</b> data and Writes to Transport</span></td>
+  </tr>
+</table>
+      
+    </div>
+    
+    
+
+    <div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxProtocol.__init__">
+    
+  </a>
+  <a name="__init__">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    __init__(self, factory):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p>Protocol Constructor</p>
+<ul>
+  <li>
+    Receives the Parent Factory as argumnet
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxProtocol.connectionMade">
+    
+  </a>
+  <a name="connectionMade">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    connectionMade(self):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Server</b> receives a new connection</p><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxProtocol.connectionLost">
+    
+  </a>
+  <a name="connectionLost">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    connectionLost(self, reason):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Server</b> loses a connection</p><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxProtocol.lineReceived">
+    
+  </a>
+  <a name="lineReceived">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    lineReceived(self, data):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Incoming</b> Line Data</p>
+<ul>
+  <li>
+    Un-pickles Line Data
+  </li>
+  <li>
+    Directs New User Instances to the Factory "On Data" method
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxProtocol.rawDataReceived">
+    
+  </a>
+  <a name="rawDataReceived">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    rawDataReceived(self, data):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Raw</b> File data</p>
+<ul>
+  <li>
+    Controls the Flow of Raw Data
+  </li>
+  <li>
+    Calls "bufferFile" Method to Process Data
+  </li>
+  <li>
+    Resets the Line Mode Once Complete
+  </li>
+  <li>
+    Creates a New File Obj in a Thread
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxProtocol.bufferFile">
+    
+  </a>
+  <a name="bufferFile">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    bufferFile(self, chunck):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Buffering</b> Raw Data</p>
+<ul>
+  <li>
+    Calculates the Overall % Received
+  </li>
+  <li>
+    Writes Buffered Data to Temp File Once Complete
+  </li>
+  <li>
+    Relays the Progress to the Client Each Iteration
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxProtocol.sendData">
+    
+  </a>
+  <a name="sendData">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    sendData(self, data):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Pickle</b> data and Writes to Transport</p><table class="fieldTable"></table></div>
+  </div>
+</div>
+    <address>
+      <a href="index.html">API Documentation</a> for nukebox2000, generated by <a href="http://codespeak.net/~mwh/pydoctor/">pydoctor</a> at 2016-07-15 22:06:37.
+    </address>
+  </body>
+</html>

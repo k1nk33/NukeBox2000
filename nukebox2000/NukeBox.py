@@ -23,7 +23,6 @@ def main():
     B{Main} function of the NukeBox Server
 
       - Contains 3 functions:
-
         - "makeDirs" -> Creates required NukeBox Server directory structure
         - "playBack" -> Plays each track in turn
         - "cleanUp"  -> Stops the Reactor
@@ -40,7 +39,6 @@ def main():
           - Calls B{umask} & tries to make the new directory
           - Resets B{umask} on exit
           - Requires 2 arguments
-
             - "Path" -> to the new directory
             - "Permission" -> B{Octal} permission to be assigned
         '''
@@ -93,7 +91,7 @@ def main():
 
         '''
         B{PlayBack} Function
- 
+
           - Continously checks the Queue for new Tracks
           - Pops each entry in turn
           - Creates Media PLayer via VLC

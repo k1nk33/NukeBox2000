@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <title>nukebox2000.NukeBoxServer.NukeBoxFactory : API documentation</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <link type="text/css" href="apidocs.css" rel="stylesheet" />
+    
+    
+  </head>
+  <body>
+    <h1 class="class">n.N.NukeBoxFactory(<span title="twisted.internet.protocol.ServerFactory">protocol.ServerFactory</span>) : class documentation</h1>
+    <p>
+      <span id="part">Part of <a href="nukebox2000.html">nukebox2000</a>.<a href="nukebox2000.NukeBoxServer.html">NukeBoxServer</a></span>
+      
+      <a href="classIndex.html#nukebox2000.NukeBoxServer.NukeBoxFactory">View In Hierarchy</a>
+    </p>
+    <div>
+      
+    </div>
+    <div class="docstring">
+      <div><p><b>NukeBox 2000 Factory Object</b></p>
+<ul>
+  <li>
+    Stores Relevant Instance Variables
+  </li>
+  <li>
+    Builds a Protocol Instance for Each New Client
+  </li>
+  <li>
+    Starts a HTTP Server to Serve Cover Art
+  </li>
+  <li>
+    Registers New Clients
+  </li>
+  <li>
+    Processes Incoming Data Transfer and Request Info
+  </li>
+  <li>
+    Provides Protocols with Method to Update NukeBox Q Information
+  </li>
+</ul><table class="fieldTable"></table></div>
+    </div>
+
+    
+    <div id="splitTables">
+      <table class="children sortable" id="id9">
+  
+  
+  <tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxFactory.html#__init__">__init__</a></td>
+    <td><span><b>Initial State</b> of the Nukebox Factory</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxFactory.html#buildProtocol">buildProtocol</a></td>
+    <td><span><b>Builds Instances</b> of Nukebox Protocol</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxFactory.html#register">register</a></td>
+    <td><span><b>Register New Clients</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxFactory.html#onData">onData</a></td>
+    <td><span>When a protocol Receives Data - If Not Already Registered, Passes to 
+Register Method - If Registered, Passes to Process Method</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxFactory.html#process">process</a></td>
+    <td><span><b>Process Method</b> Used to Determine Response to Data</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxFactory.html#onFile">onFile</a></td>
+    <td><span><b>On File Method</b> to process Incoming File</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NukeBoxFactory.html#printResult">printResult</a></td>
+    <td><span class="undocumented">Undocumented</span></td>
+  </tr>
+</table>
+      
+    </div>
+    
+    
+
+    <div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxFactory.__init__">
+    
+  </a>
+  <a name="__init__">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    __init__(self, q, default_dir, temp_dir, art_dir, Logger=None):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Initial State</b> of the Nukebox Factory</p>
+<ul>
+  <li>
+    Sets Up:
+    <ul>
+      <li>
+        Logging
+      </li>
+      <li>
+        Directory Variables
+      </li>
+      <li>
+        Additional HTTP Server for Cover Art
+      </li>
+    </ul>
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxFactory.buildProtocol">
+    
+  </a>
+  <a name="buildProtocol">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    buildProtocol(self, addr):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Builds Instances</b> of Nukebox Protocol</p>
+<ul>
+  <li>
+    Increases Num Proto's by 1
+  </li>
+  <li>
+    Returns Proto Instance for Each New Connection
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxFactory.register">
+    
+  </a>
+  <a name="register">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    register(self, protocol, data):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Register New Clients</b></p>
+<ul>
+  <li>
+    Adds User Entry to NukeBox DB
+  </li>
+  <li>
+    Sets the User Instance State to True
+  </li>
+  <li>
+    Receives 2 arguments (in addition to self):
+    <ul>
+      <li>
+        "protocol" -&gt; The instance we're working on
+      </li>
+      <li>
+        "data" -&gt; Client related data (dict)
+      </li>
+    </ul>
+  </li>
+  <li>
+    Returns no value
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxFactory.onData">
+    
+  </a>
+  <a name="onData">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    onData(self, protocol, data):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p>When a protocol Receives Data</p>
+<ul>
+  <li>
+    If Not Already Registered, Passes to Register Method
+  </li>
+  <li>
+    If Registered, Passes to Process Method
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxFactory.process">
+    
+  </a>
+  <a name="process">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    process(self, protocol, data):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Process Method</b> Used to Determine Response to Data</p>
+<ul>
+  <li>
+    If Incoming File is Signalled (via data['func']):
+    <ul>
+      <li>
+        Set the Proto Instance File-name &amp; File-size
+      </li>
+      <li>
+        Change the Proto Line Mode to "Raw"
+      </li>
+      <li>
+        Create the Buffer Obj to Buffer Incoming Data
+      </li>
+    </ul>
+  </li>
+  <li>
+    If a Query is Signalled
+    <ul>
+      <li>
+        Send the Current Q Info
+      </li>
+    </ul>
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxFactory.onFile">
+    
+  </a>
+  <a name="onFile">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    onFile(self, protocol):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>On File Method</b> to process Incoming File</p>
+<ul>
+  <li>
+    Creates a "New File" obj. on each call
+  </li>
+  <li>
+    Wraps the NF obj. in a "Closer" class
+    <ul>
+      <li>
+        Enters &amp; Exits cleanly - hopefully :|
+      </li>
+    </ul>
+  </li>
+  <li>
+    Calls NF.onFile Method in separate thread
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NukeBoxFactory.printResult">
+    
+  </a>
+  <a name="printResult">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    printResult(self, result):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div class="undocumented">Undocumented</div>
+  </div>
+</div>
+    <address>
+      <a href="index.html">API Documentation</a> for nukebox2000, generated by <a href="http://codespeak.net/~mwh/pydoctor/">pydoctor</a> at 2016-07-15 22:06:37.
+    </address>
+  </body>
+</html>

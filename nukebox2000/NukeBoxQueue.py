@@ -7,15 +7,14 @@ import sys
 class NukeBoxQueue(collections.deque):
 
     '''
-    B{NukeBoxQueue}
+    B{NukeBoxQueue} Class
 
-    - Subclass of collections.deque
-    - Provides 4 Methods:
-
-      - "popLeft"    -> Retrieve the Left Most Entry
-      - "append"     -> Add an Entry (right most index)
-      - "updateInfo" -> Updates the Q's Current/Next Track Info (dict)
-      - "reset"      -> Resets the Q's Current/Next Track Info (dict)
+      - Subclass of collections deque
+      - Provides 4 Methods
+      - "popLeft" -> Retrieve the Left Most Entry
+        - "append" -> Add an Entry (right most index)
+        - "updateInfo" -> Updates the Q's Current/Next Track Info (dict)
+        - "reset" -> Resets the Q's Current/Next Track Info (dict)
     '''
 
     def __init__(self, Logger=None):
@@ -79,13 +78,12 @@ class NukeBoxQueue(collections.deque):
         B{Append Q Method}
 
           - Overloads the Deque Append Method (collections.deque)
-          - Receives 2 arguments:
-
+          - Adds an Entry
+          - Calls "upDateInfo" method
+          - Receives 2 arguments
             - "value"   -> The entry (dict) to append
             - "playing" -> The player (state) variable
 
-          - Adds an Entry
-          - Calls "upDateInfo" method
         '''
 
         collections.deque.append(self, value)
@@ -97,15 +95,14 @@ class NukeBoxQueue(collections.deque):
         '''
         B{Update Q Info Method}
 
-          - Receives 3 arguments:
-
-            - "func"    -> The Q function being performed (append or popleft)
-            - "data"    -> The Entry data (dict)
-            - "playing" -> The player (state) variable
-
           - Checks the Function being performed
           - Checks the length of the Q (currently)
           - Updates Q with relevant info
+          - Receives 3 arguments
+            - "func" -> The Q function being performed (append or popleft)
+            - "data" -> The Entry data (dict)
+            - "playing" -> The player (state) variable
+
         '''
 
         self.Logger.msg('Updating Q Info :)')

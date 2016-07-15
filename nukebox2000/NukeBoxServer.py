@@ -39,7 +39,6 @@ class NukeBoxProtocol(LineReceiver):
 
       - Main Nukebox Protocol
       - Responsible for:
-
         - File Transfer
         - DB Access
         - Queuing
@@ -80,7 +79,7 @@ class NukeBoxProtocol(LineReceiver):
     def connectionMade(self):
 
         '''
-        Called when the Server receives a new connection
+        B{Server} receives a new connection
         '''
 
         # Retrieve Info on the Client
@@ -91,7 +90,7 @@ class NukeBoxProtocol(LineReceiver):
     def connectionLost(self, reason):
 
         '''
-        Called when the Server loses a connection
+        B{Server} loses a connection
         '''
 
         # If the user exists in the user dictionary, remove the value
@@ -112,10 +111,10 @@ class NukeBoxProtocol(LineReceiver):
     def lineReceived(self, data):
 
         '''
-        Controls the Flow of Incoming Line Data
+        B{Incoming} Line Data
 
-        - Un-pickles Line Data
-        - Directs New User Instances to the Factory "On Data" method
+          - Un-pickles Line Data
+          - Directs New User Instances to the Factory "On Data" method
         '''
 
         # self.factory.Logger.msg('Received: -> {} <- :|'.format(str(data)))
@@ -127,12 +126,12 @@ class NukeBoxProtocol(LineReceiver):
     def rawDataReceived(self, data):
 
         '''
-        Receives the Raw File data
+        B{Raw} File data
 
-        - Controls the Flow of Raw Data
-        - Calls "bufferFile" Method to Process Data
-        - Resets the Line Mode Once Complete
-        - Creates a New File Obj in a Thread
+          - Controls the Flow of Raw Data
+          - Calls "bufferFile" Method to Process Data
+          - Resets the Line Mode Once Complete
+          - Creates a New File Obj in a Thread
         '''
 
         # Set the Protocol to "Busy"
@@ -159,11 +158,11 @@ class NukeBoxProtocol(LineReceiver):
 
     def bufferFile(self, chunck):
         '''
-        Responsible for Buffering Raw Data
+        B{Buffering} Raw Data
 
-        - Calculates the Overall % Received
-        - Writes Buffered Data to Temp File Once Complete
-        - Relays the Progress to the Client Each Iteration
+          - Calculates the Overall % Received
+          - Writes Buffered Data to Temp File Once Complete
+          - Relays the Progress to the Client Each Iteration
         '''
 
         # Write the Ingress Data to the Buffer Obj
@@ -199,7 +198,7 @@ class NukeBoxProtocol(LineReceiver):
 
     def sendData(self, data):
         '''
-        Pickles any Data it Receives and Writes to Transport,
+        B{Pickle} data and Writes to Transport
         '''
 
         self.sendLine(pickle.dumps(data))
@@ -213,7 +212,6 @@ class NukeBoxBroadcastReceiver(protocol.DatagramProtocol):
 
       - Nukebox UDP Datagram Protocol
       - Responsible for:
-
         - Listening for broadcast/discover messages
         - Responding to clients
     '''
@@ -221,7 +219,7 @@ class NukeBoxBroadcastReceiver(protocol.DatagramProtocol):
     def __init__(self, factory):
 
         '''
-        Constructor Method for the UDP Receiver
+        B{Constructor} Method for the UDP Receiver
         '''
 
         # Create a Reference to the Parent Factory Class
@@ -230,7 +228,9 @@ class NukeBoxBroadcastReceiver(protocol.DatagramProtocol):
     def startProtocol(self):
 
         '''
-        Sets the underlying socket to receive UDP packets
+        B{Broadcast} build method
+
+          - Sets the underlying socket to receive UDP packets
         '''
 
         # Set the underlying socket for UDP
@@ -243,7 +243,9 @@ class NukeBoxBroadcastReceiver(protocol.DatagramProtocol):
     def datagramReceived(self, data, addr):
 
         '''
-        Called when a UDP discover message is received
+        B{Receives} Datagram & Responds
+
+          - Called when a UDP discover message is received
         '''
 
         print('Datagram received\n')
@@ -277,7 +279,6 @@ class NukeBoxFactory(protocol.ServerFactory):
         B{Initial State} of the Nukebox Factory
 
           - Sets Up:
-
             - Logging
             - Directory Variables
             - Additional HTTP Server for Cover Art
@@ -353,7 +354,6 @@ class NukeBoxFactory(protocol.ServerFactory):
           - Adds User Entry to NukeBox DB
           - Sets the User Instance State to True
           - Receives 2 arguments (in addition to self):
-
             - "protocol" -> The instance we're working on
             - "data" -> Client related data (dict)
 
@@ -391,7 +391,6 @@ class NukeBoxFactory(protocol.ServerFactory):
     def onData(self, protocol, data):
         '''
         When a protocol Receives Data
-
           - If Not Already Registered, Passes to Register Method
           - If Registered, Passes to Process Method
         '''
@@ -408,7 +407,6 @@ class NukeBoxFactory(protocol.ServerFactory):
         B{Process Method} Used to Determine Response to Data
 
           - If Incoming File is Signalled (via data['func']):
-
             - Set the Proto Instance File-name & File-size
             - Change the Proto Line Mode to "Raw"
             - Create the Buffer Obj to Buffer Incoming Data
@@ -451,7 +449,6 @@ class NukeBoxFactory(protocol.ServerFactory):
 
           - Creates a "New File" obj. on each call
           - Wraps the NF obj. in a "Closer" class
-
             - Enters & Exits cleanly - hopefully :|
 
           - Calls NF.onFile Method in separate thread
@@ -504,7 +501,7 @@ class NewFile():
     # New File Constructor Method
     def __init__(self, factory, protocol, file, ip, nbdb):
         '''
-        Constructor method
+        B{Constructor} Method for New Files
         '''
 
         # Required Instance Variables
@@ -526,7 +523,6 @@ class NewFile():
 
           - Controls the Flow for the File Data
           - Retrieves Metadata
-
             - Uses either ID3 lib
             - Custom Metadata methods
 
@@ -755,11 +751,13 @@ class Closer:
 
       - Allows the use of the "with" statement
       - Automatically Close out an obj.
-
     '''
 
     # Constructor
     def __init__(self, obj):
+        '''
+        B{Wrapper Class} for Closing out obj.
+        '''
 
         # receive an obj
         self.obj = obj
@@ -767,6 +765,9 @@ class Closer:
 
     # Enter Method
     def __enter__(self):
+        '''
+        B{Enter Method}
+        '''
 
         # Return the obj
         return self.obj  # bound to target
@@ -774,6 +775,9 @@ class Closer:
     # Exit Method
     def __exit__(self, exception_type, exception_val, trace):
 
+        '''
+        B{Exit Method}
+        '''
         # Try to close cleanly
         try:
 
@@ -799,7 +803,6 @@ def main():
     B{Main} function of the NukeBox Server
 
       - Contains 3 functions:
-
         - "makeDirs" -> Creates required NukeBox Server directory structure
         - "playBack" -> Plays each track in turn
         - "cleanUp"  -> Stops the Reactor
@@ -816,7 +819,6 @@ def main():
           - Calls B{umask} & tries to make the new directory
           - Resets B{umask} on exit
           - Requires 2 arguments
-
             - "Path" -> to the new directory
             - "Permission" -> B{Octal} permission to be assigned
         '''

@@ -148,17 +148,17 @@ class NukeBoxMeta:
 
                                     if 'Various' not in filt_on:
 
-                                        album_data = entry
+                                        self.Logger.msg('Got Data :)')
 
+                                        album_data = entry
                                         break
 
                                 except:
 
+                                    self.Logger.msg('Got Data :)')
+
                                     album_data = entry
-
                                     break
-
-                    self.Logger.msg('Got Data :)')
 
                 except:
 
@@ -184,7 +184,7 @@ class NukeBoxMeta:
             if cover_result:
 
                 self.Logger.msg('Cover Result Success :)')
-                self.logger.msg('Firing Callback Chain :)')
+                self.Logger.msg('Firing Callback Chain :)')
                 d.callback(cover_result)
 
         except Exception as err:
@@ -241,7 +241,7 @@ class NukeBoxMeta:
 
           - Forms part of the Deferred Errback chain
           - Called with a twisted failure obj. (exception)
-          - Raises 
+          - Raises Fingerprint Error
         '''
 
         print('Something Happened with FingerPrinting!\n{}'.format(
@@ -255,15 +255,16 @@ if __name__ == '__main__':
     from twisted.python import log as Logger
 
     nbm = NukeBoxMeta(Logger)
+    nbm.Logger.startLogging(sys.stdout)
 
     # Print Tests
     def printResult(result):
 
         if result:
-            Logger.msg('Result Success :)')
+            nbm.Logger.msg('Result Success :)')
 
         else:
-            Logger.err('Result Failed :(')
+            nbm.Logger.err('Result Failed :(')
 
         reactor.stop()
 
@@ -276,7 +277,7 @@ if __name__ == '__main__':
         # path = '/home/darren/Development/Testing/ImageURLs/unknown3.mp3'
         # path = '/home/darren/Development/Testing/ImageURLs/unknown4.mp3'
 
-
+        # Callbacks / Errbacks
         d = nbm.fingerPrint(path)
         d.addCallback(json.loads)
         d.addErrback(nbm.fpFail)

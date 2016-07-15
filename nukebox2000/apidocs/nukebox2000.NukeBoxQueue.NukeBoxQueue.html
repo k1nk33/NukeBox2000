@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <title>nukebox2000.NukeBoxQueue.NukeBoxQueue : API documentation</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <link type="text/css" href="apidocs.css" rel="stylesheet" />
+    
+    
+  </head>
+  <body>
+    <h1 class="class">n.N.NukeBoxQueue(<span title="collections.deque">collections.deque</span>) : class documentation</h1>
+    <p>
+      <span id="part">Part of <a href="nukebox2000.html">nukebox2000</a>.<a href="nukebox2000.NukeBoxQueue.html">NukeBoxQueue</a></span>
+      
+      <a href="classIndex.html#nukebox2000.NukeBoxQueue.NukeBoxQueue">View In Hierarchy</a>
+    </p>
+    <div>
+      
+    </div>
+    <div class="docstring">
+      <div><p><b>NukeBoxQueue</b> Class</p>
+<ul>
+  <li>
+    Subclass of collections deque
+  </li>
+  <li>
+    Provides 4 Methods
+  </li>
+  <li>
+    "popLeft" -&gt; Retrieve the Left Most Entry
+    <ul>
+      <li>
+        "append" -&gt; Add an Entry (right most index)
+      </li>
+      <li>
+        "updateInfo" -&gt; Updates the Q's Current/Next Track 
+        Info (dict)
+      </li>
+      <li>
+        "reset" -&gt; Resets the Q's Current/Next Track Info 
+        (dict)
+      </li>
+    </ul>
+  </li>
+</ul><table class="fieldTable"></table></div>
+    </div>
+
+    
+    <div id="splitTables">
+      <table class="children sortable" id="id3">
+  
+  
+  <tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxQueue.NukeBoxQueue.html#__init__">__init__</a></td>
+    <td><span><b>NukeBoxQ Constructor Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxQueue.NukeBoxQueue.html#popleft">popleft</a></td>
+    <td><span><b>Pop Left Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxQueue.NukeBoxQueue.html#append">append</a></td>
+    <td><span><b>Append Q Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxQueue.NukeBoxQueue.html#updateInfo">updateInfo</a></td>
+    <td><span><b>Update Q Info Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxQueue.NukeBoxQueue.html#reset">reset</a></td>
+    <td><span><b>Q Info Reset Method</b></span></td>
+  </tr>
+</table>
+      
+    </div>
+    
+    
+
+    <div class="function">
+  <a name="nukebox2000.NukeBoxQueue.NukeBoxQueue.__init__">
+    
+  </a>
+  <a name="__init__">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    __init__(self, Logger=None):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>NukeBoxQ Constructor Method</b></p>
+<ul>
+  <li>
+    Receive an Optional Logger obj. (twisted.python.log)
+  </li>
+  <li>
+    Calls super on Inherited Class (collections.deque)
+  </li>
+  <li>
+    Sets Instance variables
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxQueue.NukeBoxQueue.popleft">
+    
+  </a>
+  <a name="popleft">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    popleft(self):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Pop Left Method</b></p>
+<ul>
+  <li>
+    Overloads the Deque Pop Method to Retrieve an (left most) Entry
+  </li>
+  <li>
+    Returns the obj. (if it exists)
+  </li>
+  <li>
+    Calls Reset Method if Q is empty
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxQueue.NukeBoxQueue.append">
+    
+  </a>
+  <a name="append">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    append(self, value, playing=False):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Append Q Method</b></p>
+<ul>
+  <li>
+    Overloads the Deque Append Method (collections.deque)
+  </li>
+  <li>
+    Adds an Entry
+  </li>
+  <li>
+    Calls "upDateInfo" method
+  </li>
+  <li>
+    Receives 2 arguments
+    <ul>
+      <li>
+        "value"   -&gt; The entry (dict) to append
+      </li>
+      <li>
+        "playing" -&gt; The player (state) variable
+      </li>
+    </ul>
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxQueue.NukeBoxQueue.updateInfo">
+    
+  </a>
+  <a name="updateInfo">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    updateInfo(self, func, data, playing=False):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Update Q Info Method</b></p>
+<ul>
+  <li>
+    Checks the Function being performed
+  </li>
+  <li>
+    Checks the length of the Q (currently)
+  </li>
+  <li>
+    Updates Q with relevant info
+  </li>
+  <li>
+    Receives 3 arguments
+    <ul>
+      <li>
+        "func" -&gt; The Q function being performed (append or 
+        popleft)
+      </li>
+      <li>
+        "data" -&gt; The Entry data (dict)
+      </li>
+      <li>
+        "playing" -&gt; The player (state) variable
+      </li>
+    </ul>
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxQueue.NukeBoxQueue.reset">
+    
+  </a>
+  <a name="reset">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    reset(self):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Q Info Reset Method</b></p>
+<ul>
+  <li>
+    Resets the Q Info to default values
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div>
+    <address>
+      <a href="index.html">API Documentation</a> for nukebox2000, generated by <a href="http://codespeak.net/~mwh/pydoctor/">pydoctor</a> at 2016-07-15 22:06:37.
+    </address>
+  </body>
+</html>

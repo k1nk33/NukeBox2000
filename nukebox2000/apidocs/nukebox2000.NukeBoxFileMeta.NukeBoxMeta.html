@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <title>nukebox2000.NukeBoxFileMeta.NukeBoxMeta : API documentation</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <link type="text/css" href="apidocs.css" rel="stylesheet" />
+    
+    
+  </head>
+  <body>
+    <h1 class="class">n.N.NukeBoxMeta : class documentation</h1>
+    <p>
+      <span id="part">Part of <a href="nukebox2000.html">nukebox2000</a>.<a href="nukebox2000.NukeBoxFileMeta.html">NukeBoxFileMeta</a></span>
+      
+      <a href="classIndex.html#nukebox2000.NukeBoxFileMeta.NukeBoxMeta">View In Hierarchy</a>
+    </p>
+    <div>
+      
+    </div>
+    <div class="docstring">
+      <div class="undocumented">No class docstring</div>
+    </div>
+
+    
+    <div id="splitTables">
+      <table class="children sortable" id="id15">
+  
+  
+  <tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.html#__init__">__init__</a></td>
+    <td><span><b>Metadata Constructor Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.html#fingerPrint">fingerPrint</a></td>
+    <td><span><b>NukeBox Fingerprinting Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.html#parseDetails">parseDetails</a></td>
+    <td><span><b>Metadata Parsing method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.html#metaData">metaData</a></td>
+    <td><span><b>Cover Art Metadata Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.html#parseFail">parseFail</a></td>
+    <td><span><b>Parse Failure Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.html#fpFail">fpFail</a></td>
+    <td><span><b>Fingerprint Failure Method</b></span></td>
+  </tr>
+</table>
+      
+    </div>
+    
+    
+
+    <div class="function">
+  <a name="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.__init__">
+    
+  </a>
+  <a name="__init__">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    __init__(self, Logger=None):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Metadata Constructor Method</b></p><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.fingerPrint">
+    
+  </a>
+  <a name="fingerPrint">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    fingerPrint(self, path):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>NukeBox Fingerprinting Method</b></p>
+<ul>
+  <li>
+    Requires the File Path (str) as an argument
+  </li>
+  <li>
+    Fingerprints the file
+  </li>
+  <li>
+    Sends file details to the Musicbrainz server (for identification)
+  </li>
+  <li>
+    Fires callback method on success
+  </li>
+  <li>
+    Fires errback method on failure
+  </li>
+  <li>
+    Returns a twisted Deferred obj.
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.parseDetails">
+    
+  </a>
+  <a name="parseDetails">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    parseDetails(self, data):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Metadata Parsing method</b></p>
+<ul>
+  <li>
+    Parses the details (data) retrieved by the fingerPrint method
+  </li>
+  <li>
+    Requires json loaded, AcoustID Response obj. as an argument (data)
+  </li>
+  <li>
+    Returns a Deferred, d
+  </li>
+  <li>
+    Fires deferred callback chain on success
+  </li>
+  <li>
+    Fires deferred errback chain on failure
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.metaData">
+    
+  </a>
+  <a name="metaData">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    metaData(self, meta):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Cover Art Metadata Method</b></p>
+<ul>
+  <li>
+    Is called with Cover Art (cover_result -&gt; meta) via Parse Details
+  </li>
+  <li>
+    Forms part of the Deferred Callback chain
+  </li>
+  <li>
+    Returns data (dict)
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.parseFail">
+    
+  </a>
+  <a name="parseFail">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    parseFail(self, failure):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Parse Failure Method</b></p>
+<ul>
+  <li>
+    Forms part of the Deferred Errback chain
+  </li>
+  <li>
+    Called with the a twisted failure obj. (exception)
+  </li>
+  <li>
+    Raises exception
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxFileMeta.NukeBoxMeta.fpFail">
+    
+  </a>
+  <a name="fpFail">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    fpFail(self, failure):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Fingerprint Failure Method</b></p>
+<ul>
+  <li>
+    Forms part of the Deferred Errback chain
+  </li>
+  <li>
+    Called with a twisted failure obj. (exception)
+  </li>
+  <li>
+    Raises Fingerprint Error
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div>
+    <address>
+      <a href="index.html">API Documentation</a> for nukebox2000, generated by <a href="http://codespeak.net/~mwh/pydoctor/">pydoctor</a> at 2016-07-15 22:06:37.
+    </address>
+  </body>
+</html>

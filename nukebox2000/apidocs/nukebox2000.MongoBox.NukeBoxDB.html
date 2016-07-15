@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <title>nukebox2000.MongoBox.NukeBoxDB : API documentation</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <link type="text/css" href="apidocs.css" rel="stylesheet" />
+    
+    
+  </head>
+  <body>
+    <h1 class="class">n.M.NukeBoxDB : class documentation</h1>
+    <p>
+      <span id="part">Part of <a href="nukebox2000.html">nukebox2000</a>.<a href="nukebox2000.MongoBox.html">MongoBox</a></span>
+      
+      <a href="classIndex.html#nukebox2000.MongoBox.NukeBoxDB">View In Hierarchy</a>
+    </p>
+    <div>
+      
+    </div>
+    <div class="docstring">
+      <div><p><b>MongoDB Access</b> for NukeBox2000</p>
+<ul>
+  <li>
+    Provides 4 Methods to NukeBox2000
+    <ul>
+      <li>
+        "createIndex" -&gt; Creates required entry indexes in the
+        DB
+      </li>
+      <li>
+        "createUser"  -&gt; Creates a new user entry in the DB
+      </li>
+      <li>
+        "createFile"  -&gt; Creates new file entry in the DB
+      </li>
+      <li>
+        "getTrack"    -&gt; Retrieve a track from the DB
+      </li>
+    </ul>
+  </li>
+</ul><table class="fieldTable"></table></div>
+    </div>
+
+    
+    <div id="splitTables">
+      <table class="children sortable" id="id13">
+  
+  
+  <tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.MongoBox.NukeBoxDB.html#__init__">__init__</a></td>
+    <td><span><b>NukeBoxDB Constructor Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.MongoBox.NukeBoxDB.html#createIndex">createIndex</a></td>
+    <td><span><b>Create Indexes</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.MongoBox.NukeBoxDB.html#createUser">createUser</a></td>
+    <td><span><b>Create User Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.MongoBox.NukeBoxDB.html#createFile">createFile</a></td>
+    <td><span><b>Create File Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.MongoBox.NukeBoxDB.html#getTrack">getTrack</a></td>
+    <td><span><b>Get Track Method</b></span></td>
+  </tr>
+</table>
+      
+    </div>
+    
+    
+
+    <div class="function">
+  <a name="nukebox2000.MongoBox.NukeBoxDB.__init__">
+    
+  </a>
+  <a name="__init__">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    __init__(self, Logger=None):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>NukeBoxDB Constructor Method</b></p>
+<ul>
+  <li>
+    Creates the Instance variables for NukeBoxDB
+  </li>
+  <li>
+    Receives Optional Logger obj.
+  </li>
+  <li>
+    Attempts to Create Indexes
+    <ul>
+      <li>
+        Prevents Duplicate Entries!
+      </li>
+    </ul>
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.MongoBox.NukeBoxDB.createIndex">
+    
+  </a>
+  <a name="createIndex">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    createIndex(self):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Create Indexes</b></p>
+<ul>
+  <li>
+    Tries to create various MongoDB Indexes
+  </li>
+  <li>
+    Speeds up DB lookup
+  </li>
+  <li>
+    Indexes Created on:
+    <ul>
+      <li>
+        Users Collection -&gt; "mac_id"
+      </li>
+      <li>
+        Users Collection -&gt; "files"
+      </li>
+      <li>
+        Files Collection -&gt; "track"
+      </li>
+    </ul>
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.MongoBox.NukeBoxDB.createUser">
+    
+  </a>
+  <a name="createUser">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    createUser(self, data):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Create User Method</b></p>
+<ul>
+  <li>
+    First tries to retrieve the User (may already exist in the DB)
+  </li>
+  <li>
+    Creates a new User Entry (if not already present in the DB)
+  </li>
+  <li>
+    Method receives a (data) dict with User info
+  </li>
+  <li>
+    Dumps info directly to DB
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.MongoBox.NukeBoxDB.createFile">
+    
+  </a>
+  <a name="createFile">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    createFile(self, file):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Create File Method</b></p>
+<ul>
+  <li>
+    First tries to retrieve the File (may already exist in the DB)
+  </li>
+  <li>
+    Creates a new File Entry (if not already present in the DB)
+  </li>
+  <li>
+    Updates the Related User File(s) Set to reference the new entry
+  </li>
+  <li>
+    Method receives a (file) dict with File info
+  </li>
+  <li>
+    Returns the File Obj. ID
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.MongoBox.NukeBoxDB.getTrack">
+    
+  </a>
+  <a name="getTrack">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    getTrack(self, track):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Get Track Method</b></p>
+<ul>
+  <li>
+    Method receives a (track) str
+  </li>
+  <li>
+    Attempts to find a Match
+  </li>
+  <li>
+    Returns a Success/Fail Boolean &amp; track ID or None
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div>
+    <address>
+      <a href="index.html">API Documentation</a> for nukebox2000, generated by <a href="http://codespeak.net/~mwh/pydoctor/">pydoctor</a> at 2016-07-15 22:06:37.
+    </address>
+  </body>
+</html>

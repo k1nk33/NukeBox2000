@@ -11,7 +11,6 @@ class NukeBoxDB():
     B{MongoDB Access} for NukeBox2000
 
       - Provides 4 Methods to NukeBox2000
-
         - "createIndex" -> Creates required entry indexes in the DB
         - "createUser"  -> Creates a new user entry in the DB
         - "createFile"  -> Creates new file entry in the DB
@@ -26,7 +25,6 @@ class NukeBoxDB():
           - Creates the Instance variables for NukeBoxDB
           - Receives Optional Logger obj.
           - Attempts to Create Indexes
-
             - Prevents Duplicate Entries!
         '''
 
@@ -51,7 +49,6 @@ class NukeBoxDB():
           - Tries to create various MongoDB Indexes
           - Speeds up DB lookup
           - Indexes Created on:
-
             - Users Collection -> "mac_id"
             - Users Collection -> "files"
             - Files Collection -> "track"
@@ -89,7 +86,9 @@ class NukeBoxDB():
 
         except Exception as err:
 
-            self.Logger.err('Users Collection - Files Index Error -> {} <-'.format(err))
+            self.Logger.err(
+                'Users Collection - Files Index Error -> {} <-'.format(err)
+            )
 
         # Create Index on Tracks
         try:
@@ -104,7 +103,9 @@ class NukeBoxDB():
 
         except errors.DuplicateKeyError:
 
-            self.Logger.err('Files Collection - Track Error -> {} <-'.format(err))
+            self.Logger.err(
+                'Files Collection - Track Error -> {} <-'.format(err)
+            )
 
     # Create User Entry
     def createUser(self, data):

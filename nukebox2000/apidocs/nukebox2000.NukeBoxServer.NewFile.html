@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+          "DTD/xhtml1-strict.dtd">
+<html>
+  <head>
+    <title>nukebox2000.NukeBoxServer.NewFile : API documentation</title>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+    <link type="text/css" href="apidocs.css" rel="stylesheet" />
+    
+    
+  </head>
+  <body>
+    <h1 class="class">n.N.NewFile : class documentation</h1>
+    <p>
+      <span id="part">Part of <a href="nukebox2000.html">nukebox2000</a>.<a href="nukebox2000.NukeBoxServer.html">NukeBoxServer</a></span>
+      
+      <a href="classIndex.html#nukebox2000.NukeBoxServer.NewFile">View In Hierarchy</a>
+    </p>
+    <div>
+      
+    </div>
+    <div class="docstring">
+      <div><p><b>Incoming File</b></p>
+<ul>
+  <li>
+    Processes Incoming Files
+  </li>
+  <li>
+    Retrieves Metadata
+  </li>
+  <li>
+    Moves File to Default Dir
+  </li>
+  <li>
+    Appends the NukeBoxQ
+  </li>
+  <li>
+    Writes Data to NukeBox DB
+  </li>
+</ul><table class="fieldTable"></table></div>
+    </div>
+
+    
+    <div id="splitTables">
+      <table class="children sortable" id="id10">
+  
+  
+  <tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NewFile.html#__init__">__init__</a></td>
+    <td><span><b>Constructor</b> Method for New Files</span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NewFile.html#onFile">onFile</a></td>
+    <td><span><b>New File Received</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NewFile.html#metaResult">metaResult</a></td>
+    <td><span><b>Successful Result Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NewFile.html#metaError">metaError</a></td>
+    <td><span><b>Failed Result Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NewFile.html#metaProcess">metaProcess</a></td>
+    <td><span><b>Process Metadata Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NewFile.html#moveFile">moveFile</a></td>
+    <td><span><b>Move File Method</b></span></td>
+  </tr><tr class="method">
+    
+    
+    <td>Method</td>
+    <td><a href="nukebox2000.NukeBoxServer.NewFile.html#writeToDB">writeToDB</a></td>
+    <td><span><b>Write DB Entry Method</b></span></td>
+  </tr>
+</table>
+      
+    </div>
+    
+    
+
+    <div class="function">
+  <a name="nukebox2000.NukeBoxServer.NewFile.__init__">
+    
+  </a>
+  <a name="__init__">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    __init__(self, factory, protocol, file, ip, nbdb):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Constructor</b> Method for New Files</p><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NewFile.onFile">
+    
+  </a>
+  <a name="onFile">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    onFile(self):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>New File Received</b></p>
+<ul>
+  <li>
+    Controls the Flow for the File Data
+  </li>
+  <li>
+    Retrieves Metadata
+    <ul>
+      <li>
+        Uses either ID3 lib
+      </li>
+      <li>
+        Custom Metadata methods
+      </li>
+    </ul>
+  </li>
+  <li>
+    Calls "moveFile" method
+  </li>
+  <li>
+    Updates/Appends the Q
+  </li>
+  <li>
+    Calls "writeToDB" method
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NewFile.metaResult">
+    
+  </a>
+  <a name="metaResult">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    metaResult(self, result):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Successful Result Method</b></p>
+<ul>
+  <li>
+    Forms part of a Deferred Callback Chain
+  </li>
+  <li>
+    Recieves the resulting dict obj. (only cover art at the mo)
+  </li>
+  <li>
+    Passes the result to metaSuccess method
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NewFile.metaError">
+    
+  </a>
+  <a name="metaError">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    metaError(self, error):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Failed Result Method</b></p><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NewFile.metaProcess">
+    
+  </a>
+  <a name="metaProcess">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    metaProcess(self, result=None):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Process Metadata Method</b></p>
+<ul>
+  <li>
+    Moves the File now that it has been veerified
+  </li>
+  <li>
+    Appends the Q with the new track
+  </li>
+  <li>
+    Notifies the Client of the tracks position in the Q
+  </li>
+  <li>
+    Calls "writeToDB" to add a New File entry to the DB
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NewFile.moveFile">
+    
+  </a>
+  <a name="moveFile">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    moveFile(self):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Move File Method</b></p>
+<ul>
+  <li>
+    Moves the Temp file from sandbox to default storage location
+  </li>
+  <li>
+    Parsing the Cover Art Details
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div><div class="function">
+  <a name="nukebox2000.NukeBoxServer.NewFile.writeToDB">
+    
+  </a>
+  <a name="writeToDB">
+    
+  </a>
+  <div class="functionHeader">
+    
+    def
+    writeToDB(self):
+    
+  </div>
+  <div class="docstring functionBody">
+    
+    <div><p><b>Write DB Entry Method</b></p>
+<ul>
+  <li>
+    Add File Details to NukeBox DB
+  </li>
+  <li>
+    Returns Boolean True (can't remeber why!)
+  </li>
+</ul><table class="fieldTable"></table></div>
+  </div>
+</div>
+    <address>
+      <a href="index.html">API Documentation</a> for nukebox2000, generated by <a href="http://codespeak.net/~mwh/pydoctor/">pydoctor</a> at 2016-07-15 22:06:37.
+    </address>
+  </body>
+</html>
