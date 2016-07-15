@@ -49,7 +49,7 @@ test_requirements = [
 
 setup(
     name='nukebox2000',
-    version='0.1.0',
+    version='0.1.1',
     description="Network jukebox",
     long_description=readme + '\n\n' + history,
     author="Darren Dowdall",
