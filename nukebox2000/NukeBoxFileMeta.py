@@ -8,6 +8,7 @@ import math
 import json
 import musicbrainzngs
 from mutagen.mp3 import MP3
+import sys
 
 
 class NukeBoxMeta:
@@ -15,9 +16,20 @@ class NukeBoxMeta:
     '''
     '''
 
-    def __init__(self):
+    # Constructor
+    def __init__(self, Logger=None):
         '''
+        B{Metadata Constructor Method}
         '''
+
+        # Logging
+        if Logger is None:
+
+            from twisted.python import log as Logger
+            Logger.startLogging(sys.stdout)
+
+        self.Logger = Logger
+        self.Logger.msg('Metadata Module Up')
 
         self.api_key = '5htdnbd6y5'
 
@@ -30,13 +42,20 @@ class NukeBoxMeta:
             "0.1"
         )
 
+    # Fingerprint File
     def fingerPrint(self, path):
         '''
-        Deferred NukeBox AcoustID Fingerprinting Method
+        B{NukeBox Fingerprinting Method}
 
-        - Requires the path to the file in question as an argument
-        - Forms part of a In-line Deferred Chain
+          - Requires the File Path (str) as an argument
+          - Fingerprints the file
+          - Sends file details to the Musicbrainz server (for identification)
+          - Fires callback method on success
+          - Fires errback method on failure
+          - Returns a twisted Deferred obj.
         '''
+
+        self.Logger.msg('Attempting to Fingerprint File :)')
 
         try:
 
@@ -48,17 +67,26 @@ class NukeBoxMeta:
             #     if score > 0.9:
             #         print(score, rec_id, title, artist + '\n')
 
+            # Retrieve file duration
             audio = MP3(path)
             duration = int(math.ceil(audio.info.length))
 
+            # Create a Deferred obj. (twisted.defer.Deferred)
             d = defer.Deferred()
+
+            # Fingerprint the File
             _, fingerprint = acoustid.fingerprint_file(
                 path, maxlength=15
             )
 
+            # Add "getPage" as 1st callback (when defer returns)
+            # Note: getPage returns a deferred result also
             d.addCallback(getPage)
 
+            # If the variable exists, send it to musicbrainz for analysis
             if fingerprint:
+
+                self.Logger.msg('Fingerprint Done :)')
 
                 url = self.base_url.format(
                     self.api_key,
@@ -66,24 +94,33 @@ class NukeBoxMeta:
                     fingerprint
                 )
 
+                self.Logger.msg('Firing Metadata callback chain :)')
+
+                # Fire the defers callback chain
                 d.callback(url)
 
         except Exception as err:
 
+            self.Logger.err('Firing deferred errback chain :(')
+            # Fire the defers errback chain
             d.errback(err)
 
+        self.Logger.msg('Returning Metadata Deferred :)')
+        # Must return a Deferred
         return d
 
     def parseDetails(self, data):
         '''
+        B{Metadata Parsing method}
+        
         Parses the details retrieved by the fingerPrint method
 
-        - Requires an AcoustID Response Object as an argument
+        - Requires json loaded, AcoustID Response Object as an argument (data)
         - Returns a Deferred, d
-        - Fires d.callback on success
-        - Fires d.errback on exception
+        - Fires deferred callback chain on success
+        - Fires deferred errback chain on failure
         '''
-        print('Parsing Details')
+        self.Logger.msg('Parsing Details')
 
         d = defer.Deferred()
 
@@ -111,14 +148,16 @@ class NukeBoxMeta:
                                     if 'Various' not in filt_on:
 
                                         album_data = entry
-                                        print('Got Data ', str(album_data))
+
                                         break
 
                                 except:
 
                                     album_data = entry
-                                    print('Got Data ', str(album_data))
+
                                     break
+
+                    self.Logger.msg('Got Data :)')
 
                 except:
 
@@ -135,17 +174,22 @@ class NukeBoxMeta:
                 'artist_id': artist_id
             }
 
+            self.Logger.msg('Transmitting details to Musicbrainz sever :)')
+
             cover_result = musicbrainzngs.get_release_group_image_list(
                 album_id
             )
 
             if cover_result:
 
+                self.Logger.msg('Cover Result Success :)')
+                self.logger.msg('Firing Callback Chain :)')
                 d.callback(cover_result)
 
         except Exception as err:
 
-            print('Error ', err)
+            self.Logger.err('Error {}'.format(err))
+            self.Logger.msg('Firing Errback Chain :(')
             d.errback()
 
         return d

@@ -1,16 +1,41 @@
 #!/usr/bin/env python
 
 import collections
+import sys
 
 
 class NukeBoxQueue(collections.deque):
 
     '''
-    Constructor for NukeBoxQueue
+    B{NukeBoxQueue}
+
     - Subclass of collections.deque
+    - Provides 4 Methods:
+
+      - "popLeft"    -> Retrieve the Left Most Entry
+      - "append"     -> Add an Entry (right most index)
+      - "updateInfo" -> Updates the Q's Current/Next Track Info (dict)
+      - "reset"      -> Resets the Q's Current/Next Track Info (dict)
     '''
 
-    def __init__(self):
+    def __init__(self, Logger=None):
+
+        '''
+        B{NukeBoxQ Constructor Method}
+
+          - Receive an Optional Logger obj. (twisted.python.log)
+          - Calls super on Inherited Class (collections.deque)
+          - Sets Instance variables
+        '''
+
+        # Logging
+        if Logger is None:
+
+            from twisted.python import log as Logger
+            Logger.startLogging(sys.stdout)
+
+        self.Logger = Logger
+        self.Logger.msg('NukeBox Q Module Up :)')
 
         super(NukeBoxQueue, self).__init__()
         self.info = {
@@ -23,35 +48,67 @@ class NukeBoxQueue(collections.deque):
     def popleft(self):
 
         '''
-        Call on the Deque Pop Method to Retrieve an Entry
-        - Returns the Retrieved Object
+        B{Pop Left Method}
+
+          - Overloads the Deque Pop Method to Retrieve an (left most) Entry
+          - Returns the obj. (if it exists)
+          - Calls Reset Method if Q is empty
         '''
 
+        self.Logger.msg('Attempting to Pop Entry :)')
+
+        # Try to Retrieve an Entry
         try:
 
             item = collections.deque.popleft(self)
             self.updateInfo('pop', item)
+
+            self.Logger.msg('Popped -> {} <- Success :)'.format(item['track']))
+
             return item
 
-        except:
+        # Except if there is an error, reset the Q info
+        except Exception as err:
 
-            print('Nothing to Queue')
+            self.Logger.err('Queue Error -> {} <- :('.format(err))
             self.reset()
 
     def append(self, value, playing=False):
 
         '''
-        Calls on the Deque Append Method to Add an Entry
+        B{Append Q Method}
+
+          - Overloads the Deque Append Method (collections.deque)
+          - Receives 2 arguments:
+
+            - "value"   -> The entry (dict) to append
+            - "playing" -> The player (state) variable
+
+          - Adds an Entry
+          - Calls "upDateInfo" method
         '''
 
         collections.deque.append(self, value)
         self.updateInfo('append', value, playing)
 
+        self.Logger.msg('Appended Entry -> {} <- :)'.format(value['track']))
+
     def updateInfo(self, func, data, playing=False):
         '''
+        B{Update Q Info Method}
+
+          - Receives 3 arguments:
+
+            - "func"    -> The Q function being performed (append or popleft)
+            - "data"    -> The Entry data (dict)
+            - "playing" -> The player (state) variable
+
+          - Checks the Function being performed
+          - Checks the length of the Q (currently)
+          - Updates Q with relevant info
         '''
 
-        print('Inside Function, Q Len is ', str(len(self)))
+        self.Logger.msg('Updating Q Info :)')
 
         if func is 'append':
 
@@ -136,7 +193,15 @@ class NukeBoxQueue(collections.deque):
                     'art': _data['art']
                 }
 
+        self.Logger.msg('Q Info Update Complete :)')
+
     def reset(self):
+
+        '''
+        B{Q Info Reset Method}
+
+          - Resets the Q Info to default values
+        '''
 
         self.info['current'] = self.info['next'] = {
             'track': '',
@@ -148,9 +213,11 @@ class NukeBoxQueue(collections.deque):
 
 if __name__ == '__main__':
 
-# Test Data
+    # Test Data
 
-    print('#######\n Tests \n#######')
+    q = NukeBoxQueue()
+
+    Logger = q.Logger  # twisted.python.log obj.
 
     to_q_1 = {
         'track': 'Song Title 1',
@@ -184,451 +251,445 @@ if __name__ == '__main__':
         '_id': 004
     }
 
-    q = NukeBoxQueue()
-
-    print('\nAbout to Start Appending\n')
-
+#
 # Test Set 1
+#
+    Logger.msg('Test 1 - Start Appending an Empty Q :)')
 
 # 1 - Append:
-    print('\nAppending Element 1')
+    Logger.msg('Appending Element 1')
+
     q.append(to_q_1, playing=False)
-    print('Appended\n')
+
+    # Because we start with an Empty Q, Current should be Element 1,
+    # Next should be empty!
+
+    # If the Current Track does not match Element 1 & the Next Track
+    # is not Empty, Something went wrong!
 
     if q.info['current']['track'] is not 'Song Title 1' and \
        q.info['next']['track'] is not '':
 
-        print('Append 1 ### Error ###: {}{}'.format(
+        Logger.err('Append 1 Error: {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
+    # Otherwise all is as it should be
     else:
-        print('Append 1 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Append Element 1 - Success :)')
 
 # 2 - Append:
-    print('\nAppending Element 2')
-    q.append(to_q_2, playing=False)
-    print('Appended\n')
+    Logger.msg('Appending Element 2')
+
+    q.append(to_q_2, playing=True)
+
+    # Now Current should be Element 1 & Next should be Element 2
 
     if q.info['current']['track'] is not 'Song Title 1' and \
        q.info['next']['track'] is not 'Song Title 2':
 
-        print('Append 2 ### Error ###: {}{}'.format(
+        Logger.err('Append Element 2 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Append 2 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Append Element 2 - Success :)')
 
 # 3 - Append:
-    print('\nAppending Element 3')
-    q.append(to_q_3, playing=False)
-    print('Appended\n')
+    Logger.msg('Appending Element 3')
+
+    q.append(to_q_3, playing=True)
+
+    # Current & Next should remain the same
 
     if q.info['current']['track'] is not 'Song Title 1' and \
        q.info['next']['track'] is not 'Song Title 2':
 
-        print('Append 3 ### Error ###: {}{}'.format(
+        Logger.err('Append Element 3 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Append 3 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Append Element 3 - Success :)')
 
 # 4 - Append:
-    print('\nAppending Element 4')
-    q.append(to_q_4, playing=False)
-    print('Appended\n')
+    Logger.msg('Appending Element 4')
+    q.append(to_q_4, playing=True)
+
+    # Again, there should be no change (as we haven't popped yet!)
 
     if q.info['current']['track'] is not 'Song Title 1' and \
        q.info['next']['track'] is not 'Song Title 2':
 
-        print('Append 4 ### Error ###: {}{}'.format(
+        Logger.err('Append Element 4 Error - {}{}'.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Append 4 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Append Element 4 - Success :)')
 
-    print('\nAbout to Start Popping')
+    Logger.msg('About to Start Popping :)')
 
 # 5 - Pop:
-    print('\nPopping Item 1')
+    Logger.msg('Popping Item 1')
+
     item_1 = q.popleft()
-    print('Popped\n')
+
+    # Current & Next values should not change at this time
 
     if q.info['current']['track'] is not 'Song Title 1' and \
        q.info['next']['track'] is not 'Song Title 2':
 
-        print('Pop 1 ### Error ###: {}{}'.format(
+        Logger.err('Pop Item 1 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Pop 1 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Pop Item 1 - Success :)')
 
 # 6 - Pop:
-    print('\nPopping Item 2')
-    item_2 = q.popleft()
-    print('Popped\n')
+    Logger.msg('Popping Item 2')
 
+    item_2 = q.popleft()
+
+    # Current & Next should shift to the Right by 1 Index
     if q.info['current']['track'] is not 'Song Title 2' and \
        q.info['next']['track'] is not 'Song Title 3':
 
-        print('Pop 2 ### Error ###: {}{}'.format(
+        Logger.err('Pop Item 2 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Pop 2 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Pop Item 2 - Success :)')
 
 # 7 - Pop:
-    print('\nPopping Item 3')
+    Logger.msg('Popping Item 3')
+
     item_3 = q.popleft()
-    print('Popped\n')
+
+    # Again, Current & Next should shift right
 
     if q.info['current']['track'] is not 'Song Title 3' and \
        q.info['next']['track'] is not 'Song Title 4':
 
-        print('Pop 3 ### Error ###: {}{}'.format(
+        Logger.err('Pop Item 3 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Pop 3 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Pop Item 3 - Success :)')
 
 # 8 - Pop:
-    print('\nPopping Item 4')
+    Logger.msg('Popping Item 4')
+
     item_4 = q.popleft()
-    print('Popped\n')
+
+    # This time Current should be the last entry, Next should be empty
 
     if q.info['current']['track'] is not 'Song Title 4' and \
        q.info['next']['track'] is not '':
 
-        print('Pop 4 ### Error ###: {}{}'.format(
+        Logger.err('Pop Item 4 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Pop 4 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Pop Item 4 - Success :)')
 
 # 9 - Empty Pop:
+
     try:
 
-        print('\nAttempting to Pop from Empty Q')
+        Logger.msg('Attempting to Pop from Empty Q')
         result = q.popleft()
-        print('Popped\n')
 
         if q.info['current']['track'] is not '' and \
            q.info['next']['track'] is not '':
 
-            print('Empty Pop ### Error ###: {}{}'.format(
+            Logger.err('Empty Pop Error - {}{} :('.format(
                 q.info['current']['track'],
                 q.info['next']['track'])
             )
 
         else:
 
-            print('Empty Pop ### Success ###')
-            print('Current Len of Q ', str(len(q)))
+            Logger.msg('Empty Pop - Success :)')
 
     except Exception as e:
 
-        print('Error is {}\n\n'.format(e))
+        Logger.msg('Empty Pop Error is {}'.format(e))
 
-    print('\n\nStarting with Empty Q & Not Playing\n')
-
+#
 # Test Set 2
+#
+    Logger.msg('Test 2 - Starting with Empty Q & Not Playing :)')
 
 # 1 - Append:
-    print('\nAppending Element 1')
+    Logger.msg('Appending Element 1')
+
     q.append(to_q_1, playing=False)
-    print('Appended\n')
+
+    # Because we start with an Empty Q, Current should be Element 1,
+    # Next should be empty!
+
+    # If the Current Track does not match Element 1 & the Next Track
+    # is not Empty, Something went wrong!
 
     if q.info['current']['track'] is not 'Song Title 1' and \
        q.info['next']['track'] is not '':
 
-        print('Append 1 ### Error ###: {}{}'.format(
+        Logger.err('Append 1 Error: {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
+    # Otherwise all is as it should be
     else:
-        print('Append 1 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Append Element 1 - Success :)')
 
 # 2 - Append:
-    print('\nAppending Element 2')
+    Logger.msg('Appending Element 2')
+
     q.append(to_q_2, playing=True)
-    print('Appended\n')
+
+    # Now Current should be Element 1 & Next should be Element 2
 
     if q.info['current']['track'] is not 'Song Title 1' and \
        q.info['next']['track'] is not 'Song Title 2':
 
-        print('Append 2 ### Error ###: {}{}'.format(
+        Logger.err('Append Element 2 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Append 2 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Append Element 2 - Success :)')
 
 # 3 - Pop:
-    print('\nPopping Item 1')
+    Logger.msg('Popping Item 1')
+
     item_1 = q.popleft()
-    print('Popped\n')
+
+    # Currently, the Player is playing and an Item has been popped!
+    # Current & Next should remain the same!
 
     if q.info['current']['track'] is not 'Song Title 1' and \
        q.info['next']['track'] is not 'Song Title 2':
 
-        print('Pop 1 ### Error ###: {}{}'.format(
+        Logger.err('Pop Item 1 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Pop 1 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Pop Item 1 - Success :)')
 
 # 4 - Append:
-    print('\nAppending Element 3')
+    Logger.msg('Appending Element 3')
+
     q.append(to_q_3, playing=True)
-    print('Appended\n')
+
+    # Player is playing, items have been popped & a new Entry appended
+    # Current & Next should remain the same
 
     if q.info['current']['track'] is not 'Song Title 1' and \
        q.info['next']['track'] is not 'Song Title 2':
 
-        print('Append 3 ### Error ###: {}{}'.format(
+        Logger.err('Append Item 3 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Append 3 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Append Item 3 - Success :)')
 
 # 5 - Pop:
-    print('\nPopping Item 2')
-    item_1 = q.popleft()
-    print('Popped\n')
+    Logger.msg('Popping Item 2')
+
+    item_2 = q.popleft()
+
+    # A New pop occurs
+    # Current & Next should shift right 1 Index
 
     if q.info['current']['track'] is not 'Song Title 2' and \
        q.info['next']['track'] is not 'Song Title 3':
 
-        print('Pop 2 ### Error ###: {}{}'.format(
+        Logger.err('Pop Item 2 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Pop 2 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Pop Item 2 - Success :)')
 
 # 6 - Pop:
-    print('\nPopping Item 3')
+    Logger.msg('Popping Item 3')
+
     item_1 = q.popleft()
-    print('Popped\n')
+
+    # A New pop occurs
+    # Current & Next should shift right 1 Index
+    # As there is only 1 Item in the Q, Next should be empty!
 
     if q.info['current']['track'] is not 'Song Title 3' and \
        q.info['next']['track'] is not '':
 
-        print('Pop 3 ### Error ###: {}{}'.format(
+        Logger.err('Pop Item 3 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Pop 3 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Pop Item 3 - Success :)')
 
 # 7 - Append:
-    print('\nAppending Element 4')
+    Logger.msg('Appending Element 4')
+
     q.append(to_q_4, playing=True)
-    print('Appended\n')
+
+    # Current should remain the same
+    # As the Q was empty before appending, Next should now be
+    # this new element
 
     if q.info['current']['track'] is not 'Song Title 3' and \
        q.info['next']['track'] is not 'Song Title 4':
 
-        print('Append 4 ### Error ###: {}{}'.format(
+        Logger.err('Append Element 4 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Append 4 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Append Element 4 - Success :)')
 
 # 8 - Pop:
-    print('\nPopping Item 4')
+    Logger.msg('Popping Item 4')
+
     item_1 = q.popleft()
-    print('Popped\n')
+
+    # With a new Pop, Current & Next should shift right 1 Index
+    # Next should now by empty (no more items in Q)
 
     if q.info['current']['track'] is not 'Song Title 4' and \
        q.info['next']['track'] is not '':
 
-        print('Pop 4 ### Error ###: {}{}'.format(
+        Logger.err('Pop Item 4 Error - {}{} :('.format(
             q.info['current']['track'],
             q.info['next']['track'])
         )
 
     else:
-        print('Pop 4 ### Success ###')
-        print('Current Len of Q ', str(len(q)))
+        Logger.msg('Pop Item 4 - Success :)')
 
 # Tests Output
 
-# #######
-#  Tests 
-# #######
-
-# About to Start Appending
-
-
+# Log opened.
+# NukeBox Q Module Up :)
+# Test 1 - Start Appending an Empty Q :)
 # Appending Element 1
-# ('Inside Function, Q Len is ', '1')
+# Updating Q Info :)
 # Not Playing
-# Appended
-
-# Append 1 ### Success ###
-# ('Current Len of Q ', '1')
-
+# Q Info Update Complete :)
+# Appended Entry -> Song Title 1 <- :)
+# Append Element 1 - Success :)
 # Appending Element 2
-# ('Inside Function, Q Len is ', '2')
+# Updating Q Info :)
 # Len is 2
-# Appended
-
-# Append 2 ### Success ###
-# ('Current Len of Q ', '2')
-
+# Q Info Update Complete :)
+# Appended Entry -> Song Title 2 <- :)
+# Append Element 2 - Success :)
 # Appending Element 3
-# ('Inside Function, Q Len is ', '3')
+# Updating Q Info :)
 # Queue Longer than 2
-# Appended
-
-# Append 3 ### Success ###
-# ('Current Len of Q ', '3')
-
+# Appended Entry -> Song Title 3 <- :)
+# Append Element 3 - Success :)
 # Appending Element 4
-# ('Inside Function, Q Len is ', '4')
+# Updating Q Info :)
 # Queue Longer than 2
-# Appended
-
-# Append 4 ### Success ###
-# ('Current Len of Q ', '4')
-
-# About to Start Popping
-
+# Appended Entry -> Song Title 4 <- :)
+# Append Element 4 - Success :)
+# About to Start Popping :)
 # Popping Item 1
-# ('Inside Function, Q Len is ', '3')
-# Popped
-
-# Pop 1 ### Success ###
-# ('Current Len of Q ', '3')
-
+# Attempting to Pop Entry :)
+# Updating Q Info :)
+# Q Info Update Complete :)
+# Popped -> Song Title 1 <- Success :)
+# Pop Item 1 - Success :)
 # Popping Item 2
-# ('Inside Function, Q Len is ', '2')
-# Popped
-
-# Pop 2 ### Success ###
-# ('Current Len of Q ', '2')
-
+# Attempting to Pop Entry :)
+# Updating Q Info :)
+# Q Info Update Complete :)
+# Popped -> Song Title 2 <- Success :)
+# Pop Item 2 - Success :)
 # Popping Item 3
-# ('Inside Function, Q Len is ', '1')
-# Popped
-
-# Pop 3 ### Success ###
-# ('Current Len of Q ', '1')
-
+# Attempting to Pop Entry :)
+# Updating Q Info :)
+# Q Info Update Complete :)
+# Popped -> Song Title 3 <- Success :)
+# Pop Item 3 - Success :)
 # Popping Item 4
-# ('Inside Function, Q Len is ', '0')
-# Popped
-
-# Pop 4 ### Success ###
-# ('Current Len of Q ', '0')
-
+# Attempting to Pop Entry :)
+# Updating Q Info :)
+# Q Info Update Complete :)
+# Popped -> Song Title 4 <- Success :)
+# Pop Item 4 - Success :)
 # Attempting to Pop from Empty Q
-# Nothing to Queue
-# Popped
-
-# Empty Pop ### Success ###
-# ('Current Len of Q ', '0')
-
-
-# Starting with Empty Q & Not Playing
-
-
+# Attempting to Pop Entry :)
+# 'Queue Error -> pop from an empty deque <- :('
+# Empty Pop - Success :)
+# Test 2 - Starting with Empty Q & Not Playing :)
 # Appending Element 1
-# ('Inside Function, Q Len is ', '1')
+# Updating Q Info :)
 # Not Playing
-# Appended
-
-# Append 1 ### Success ###
-# ('Current Len of Q ', '1')
-
+# Q Info Update Complete :)
+# Appended Entry -> Song Title 1 <- :)
+# Append Element 1 - Success :)
 # Appending Element 2
-# ('Inside Function, Q Len is ', '2')
+# Updating Q Info :)
 # Len is 2
-# Appended
-
-# Append 2 ### Success ###
-# ('Current Len of Q ', '2')
-
+# Q Info Update Complete :)
+# Appended Entry -> Song Title 2 <- :)
+# Append Element 2 - Success :)
 # Popping Item 1
-# ('Inside Function, Q Len is ', '1')
-# Popped
-
-# Pop 1 ### Success ###
-# ('Current Len of Q ', '1')
-
+# Attempting to Pop Entry :)
+# Updating Q Info :)
+# Q Info Update Complete :)
+# Popped -> Song Title 1 <- Success :)
+# Pop Item 1 - Success :)
 # Appending Element 3
-# ('Inside Function, Q Len is ', '2')
+# Updating Q Info :)
 # Len is 2
-# Appended
-
-# Append 3 ### Success ###
-# ('Current Len of Q ', '2')
-
+# Appended Entry -> Song Title 3 <- :)
+# Append Item 3 - Success :)
 # Popping Item 2
-# ('Inside Function, Q Len is ', '1')
-# Popped
-
-# Pop 2 ### Success ###
-# ('Current Len of Q ', '1')
-
+# Attempting to Pop Entry :)
+# Updating Q Info :)
+# Q Info Update Complete :)
+# Popped -> Song Title 2 <- Success :)
+# Pop Item 2 - Success :)
 # Popping Item 3
-# ('Inside Function, Q Len is ', '0')
-# Popped
-
-# Pop 3 ### Success ###
-# ('Current Len of Q ', '0')
-
+# Attempting to Pop Entry :)
+# Updating Q Info :)
+# Q Info Update Complete :)
+# Popped -> Song Title 3 <- Success :)
+# Pop Item 3 - Success :)
 # Appending Element 4
-# ('Inside Function, Q Len is ', '1')
-# Appended
-
-# Append 4 ### Success ###
-# ('Current Len of Q ', '1')
-
+# Updating Q Info :)
+# Q Info Update Complete :)
+# Appended Entry -> Song Title 4 <- :)
+# Append Element 4 - Success :)
 # Popping Item 4
-# ('Inside Function, Q Len is ', '0')
-# Popped
-
-# Pop 4 ### Success ###
-# ('Current Len of Q ', '0')
+# Attempting to Pop Entry :)
+# Updating Q Info :)
+# Q Info Update Complete :)
+# Popped -> Song Title 4 <- Success :)
+# Pop Item 4 - Success :)
