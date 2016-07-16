@@ -71,6 +71,7 @@ class NukeBoxQueue(collections.deque):
 
             self.Logger.err('Queue Error -> {} <- :('.format(err))
             self.reset()
+            # raise Exception(err)
 
     def append(self, value, playing=False):
 
@@ -424,6 +425,7 @@ if __name__ == '__main__':
     except Exception as e:
 
         Logger.msg('Empty Pop Error is {}'.format(e))
+        raise Exception('Empty Q')
 
 #
 # Test Set 2

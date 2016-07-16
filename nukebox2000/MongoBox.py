@@ -120,6 +120,7 @@ class NukeBoxDB():
 
         # Save a reference to Client Name
         self.name = data['name']
+        self.mac_id = data['mac_id']
 
         self.Logger.msg('Attempting to add -> {} <- to DB'.format(
             self.name)
@@ -130,11 +131,11 @@ class NukeBoxDB():
 
         # Check to see if the User Exists
         try:
-            _id = users.find_one(
-                {
-                    'name': self.name
-                }
-            )
+            _id = users.find_one(data)
+            #     {
+            #         'name': self.name
+            #     }
+            # )
 
             _id = _id['_id']
 
@@ -219,22 +220,28 @@ class NukeBoxDB():
         users = self.db.users
 
         # Update the set of Clients Files
-        result = users.update_one(
-            {
-                'name': self.name
-            },
-            {
-                '$addToSet':
-                    {
-                        'files': ObjectId(_id)
-                    }
-            },
-            upsert=True
-        )
+        try:
+            result = users.update_one(
+                {
+                    'name': self.name,
+                    'mac_id': self.mac_id
+                },
+                {
+                    '$addToSet':
+                        {
+                            'files': ObjectId(_id)
+                        }
+                },
+                upsert=True
+            )
 
-        self.Logger.msg('Users File(s) Set Updated - {} :)'.format(
-            result)
-        )
+            self.Logger.msg('Users File(s) Set Updated - {} :)'.format(
+                result)
+            )
+
+        except:
+
+            self.Logger.msg('File already Exists in Users Set')
 
         return _id
 

@@ -1,9 +1,8 @@
-# import unittest
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
-test_nukebox2000
+test_nukeboxQueue
 ----------------------------------
 
 Tests for `nukebox2000` module.
@@ -12,44 +11,13 @@ Tests for `nukebox2000` module.
 
 import sys
 import unittest
-# from contextlib import contextmanager
-# from click.testing import CliRunner
-
-# from nukebox2000 import nukebox2000
-# # from nukebox2000 import cli
 from nukebox2000.NukeBoxQueue import NukeBoxQueue
-
-
-# class TestNukebox2000(unittest.TestCase):
-
-#     def setUp(self):
-#         print('Setup')
-#         pass
-
-#     def tearDown(self):
-#         print('Teardown')
-#         pass
-
-#     def test_000_something(self):
-#         print('000')
-#         pass
-
-#     def test_command_line_interface(self):
-
-#         print('CLI')
-#         runner = CliRunner()
-#         result = runner.invoke(cli.main)
-#         assert result.exit_code == 0
-#         assert 'nukebox2000.cli.main' in result.output
-#         help_result = runner.invoke(cli.main, ['--help'])
-#         assert help_result.exit_code == 0
-#         assert '--help  Show this message and exit.' in help_result.output
 
 
 class TestNukeBoxQueue(unittest.TestCase):
 
     '''
-    B{NukeBoxQueue} Test Class
+    B{NukeBoxQueue} Test Case 001 & 002
 
     Tests Adding & Removing Items from the Queue, both in a linear
     & non-linear way. The Q obj. has an associated "info" dict which
@@ -63,11 +31,9 @@ class TestNukeBoxQueue(unittest.TestCase):
 
     def setUp(self):
         '''
-        B(Test Case 001}
+        B(Setup}
 
-        - Checks Current/Next Track Info
-        - Populate the queue with 4 elements
-        - Pop the Items in turn
+        Provides Dataset & Queue Instance
         '''
 
         # Test Data
@@ -107,8 +73,7 @@ class TestNukeBoxQueue(unittest.TestCase):
 
     def tearDown(self):
 
-        # self.assertTrue(len(self.q) == 0)
-        pass
+        self.assertEquals(len(self.q), 0)
 
     def testLinear(self):
         '''
