@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 
-from twisted.internet import reactor, defer
-from twisted.web.client import getPage
+from twisted.internet import reactor, defer, task, threads
+# from twisted.web.client import getPage
 
-import acoustid
-import math
-import json
+# import acoustid
+# import math
+# import json
 import musicbrainzngs
-from mutagen.mp3 import MP3
+# from mutagen.mp3 import MP3
+import taglib
 import sys
+
+from fuzzywuzzy import fuzz
 
 
 class NukeBoxMeta:
@@ -42,212 +45,151 @@ class NukeBoxMeta:
             "0.1"
         )
 
-    # Fingerprint File
-    def fingerPrint(self, path):
+    # Control Method
+    def getMetaDetails(self, known_data):
+
         '''
-        B{NukeBox Fingerprinting Method}
+        Base Metadata Method
 
-          - Requires the File Path (str) as an argument
-          - Fingerprints the file
-          - Sends file details to the Musicbrainz server (for identification)
-          - Fires callback method on success
-          - Fires errback method on failure
-          - Returns a twisted Deferred obj.
+        Calls the other methods to retrieve relevant song data
+        Receives and Returns a dict obj.
+          - Input dict must have an 'artist' & 'album' entry
+          - Output dict is the same obj. with additional info
+        '''
+        known_data['artist_id'] = self.getArtistID(known_data)
+        known_data['album_id'] = self.getAlbumID(known_data)
+        known_data['art'] = self.getCoverArt(known_data)
+
+        self.Logger.msg('Artist ID: {}\t\tAlbum ID: {}\t\tArt: {}'.format(
+            known_data['artist_id'],
+            known_data['album_id'],
+            known_data['art'])
+        )
+
+        return known_data
+
+    # Retrieve MBrainz Artist ID
+    def getArtistID(self, known_data):
+
+        '''
+        Match the given 'artist' entry to a MBrainz Artist ID
+        Returns Artist MB-ID
         '''
 
-        self.Logger.msg('Attempting to Fingerprint File :)')
+        # Blocking Call to MBrainz Server
+        result = musicbrainzngs.search_artists(known_data['artist'])
 
-        try:
+        for x, r in enumerate(result['artist-list']):
 
-            # for score, rec_id, title, artist in acoustid.match(
-            #     self.api_key,
-            #     path
-            # ):
+            # Added attempt to make a match if search is anbiguous
+            # eg. (more than 1 artist called "X")
+            # if 'disambiguation' in r:
+            try:
 
-            #     if score > 0.9:
-            #         print(score, rec_id, title, artist + '\n')
-
-            # Retrieve file duration
-            audio = MP3(path)
-            duration = int(math.ceil(audio.info.length))
-
-            # Create a Deferred obj. (twisted.defer.Deferred)
-            d = defer.Deferred()
-
-            # Fingerprint the File
-            _, fingerprint = acoustid.fingerprint_file(
-                path, maxlength=15
-            )
-
-            # Add "getPage" as 1st callback (when defer returns)
-            # Note: getPage returns a deferred result also
-            d.addCallback(getPage)
-
-            # If the variable exists, send it to musicbrainz for analysis
-            if fingerprint:
-
-                self.Logger.msg('Fingerprint Done :)')
-
-                url = self.base_url.format(
-                    self.api_key,
-                    duration,
-                    fingerprint
+                self.Logger.msg('Genre-> {} : Disambig-> {}'.format(
+                    known_data['genre'].lower(),
+                    r['disambiguation'].lower())
                 )
 
-                self.Logger.msg('Firing Metadata callback chain :)')
+                if 'genre' in known_data:
 
-                # Fire the defers callback chain
-                d.callback(url)
+                    if known_data['genre'].lower() in \
+                       r['disambiguation'].lower():
 
-        except Exception as err:
+                        self.Logger.msg('Returning Artist ID - {}'.format(
+                            result['artist-list'][x]['id'])
+                        )
 
-            self.Logger.err('Firing deferred errback chain :(')
-            # Fire the defers errback chain
-            d.errback(err)
+                        return result['artist-list'][x]['id']
 
-        self.Logger.msg('Returning Metadata Deferred :)')
-        # Must return a Deferred
-        return d
+            except:
 
-    # Parse Response
-    def parseDetails(self, data):
+                continue
+
+        self.Logger.msg('Returning Artist ID - {}'.format(
+            result['artist-list'][0]['id'])
+        )
+        # Return a default result if no other match is made
+        return result['artist-list'][0]['id']
+
+    # Retrieve MBrainz Album ID
+    def getAlbumID(self, known_data):
+
         '''
-        B{Metadata Parsing method}
-
-          - Parses the details (data) retrieved by the fingerPrint method
-          - Requires json loaded, AcoustID Response obj. as an argument (data)
-          - Returns a Deferred, d
-          - Fires deferred callback chain on success
-          - Fires deferred errback chain on failure
+        Match the given 'artist_id' entry to their 'releases'
+        Returns Release-Group MB-ID
         '''
 
-        self.Logger.msg('Parsing Details')
+        # Blocking call to MBrainz
+        result = musicbrainzngs.get_artist_by_id(
+            known_data['artist_id'],
+            includes=[
+                'release-groups',
+            ],
+            release_type=[
+                'album'
+            ]
+        )
 
-        d = defer.Deferred()
+        current_best_ratio = 0
+        # current_best_match = ''
 
-        try:
+        for release_grp in result['artist']['release-group-list']:
 
-            artist_data = data['results'][0]['recordings'][0]['artists'][0]
-            artist_id = artist_data['id']
-            artist_name = artist_data['name']
-
-            for res in data['results'][0]['recordings']:
-
-                song_title = res['title']
-
-                try:
-                    for entry in res['releasegroups']:
-
-                        if entry['type'] == 'Album':
-
-                            if 'secondarytypes' not in entry.keys():
-
-                                try:
-
-                                    filt_on = entry['artists'][0]['name']
-
-                                    if 'Various' not in filt_on:
-
-                                        self.Logger.msg('Got Data :)')
-
-                                        album_data = entry
-                                        break
-
-                                except:
-
-                                    self.Logger.msg('Got Data :)')
-
-                                    album_data = entry
-                                    break
-
-                except:
-
-                    continue
-
-            album_name = album_data['title']
-            album_id = album_data['id']
-
-            self.data = {
-                'track': song_title,
-                'album': album_name,
-                'album_id': album_id,
-                'artist': artist_name,
-                'artist_id': artist_id
-            }
-
-            self.Logger.msg('Transmitting details to Musicbrainz sever :)')
-
-            cover_result = musicbrainzngs.get_release_group_image_list(
-                album_id
+            ratio = fuzz.ratio(
+                known_data['album'].lower(),
+                release_grp['title'].lower()
             )
 
-            if cover_result:
+            self.Logger.msg('Ratio-> {}'.format(ratio))
 
-                self.Logger.msg('Cover Result Success :)')
-                self.Logger.msg('Firing Callback Chain :)')
-                d.callback(cover_result)
+            # if ratio > 50:
 
-        except Exception as err:
+            #     self.Logger.msg('Match Found')
 
-            self.Logger.err('Error {}'.format(err))
-            self.Logger.msg('Firing Errback Chain :(')
-            d.errback()
+            #     current_best_match = release_grp['id']
+            #     break
 
-        return d
+            # else:
+            if current_best_ratio < ratio:
 
-    # Metadata Cover Art
-    def metaData(self, meta):
+                current_best_ratio = ratio
+                current_best_match = release_grp['id']
+
+                self.Logger.msg('Better Ratio Found')
+                continue
+
+            self.Logger.msg('Better Ratio in Storage')
+
+            self.Logger.msg('Album ID-> {}'.format(current_best_match))
+
+        self.Logger.msg('Returning Current Best match')
+        return current_best_match
+
+    # Retrieve Cover Art URL
+    def getCoverArt(self, known_data):
+
         '''
-        B{Cover Art Metadata Method}
-
-          - Is called with Cover Art (cover_result -> meta) via Parse Details
-          - Forms part of the Deferred Callback chain
-          - Returns data (dict)
+        Retrieve Cover Art URL
+        Retruns a list of URLs (limited to 1 at the mo)
         '''
 
-        self.Logger.msg('Parsing Cover Metadata')
+        self.Logger.msg('Trying Cover Art for Album - {}'.format(
+            known_data['album_id']))
+        cover_result = musicbrainzngs.get_release_group_image_list(
+            known_data['album_id']
+        )
 
         covers = []
 
-        for image in meta["images"]:
+        for image in cover_result["images"]:
 
             if "Front" in image["types"] and image["approved"]:
 
                 self.Logger.msg('Approved front image found :)')
-
                 covers.append(image["thumbnails"]["large"])
 
-        self.data['art'] = covers
-
-        return self.data
-
-    # MBrainz/Parser Fail
-    def parseFail(self, failure):
-        '''
-        B{Parse Failure Method}
-
-          - Forms part of the Deferred Errback chain
-          - Called with the a twisted failure obj. (exception)
-          - Raises exception
-        '''
-
-        print('Failure: {}'.format(failure))
-        raise Exception('MBrainz/Parser Failure {}'.format(failure))
-
-    # FingerPrint Failure
-    def fpFail(self, failure):
-        '''
-        B{Fingerprint Failure Method}
-
-          - Forms part of the Deferred Errback chain
-          - Called with a twisted failure obj. (exception)
-          - Raises Fingerprint Error
-        '''
-
-        print('Something Happened with FingerPrinting!\n{}'.format(
-            failure)
-        )
-        raise Exception('FPrint Error')
+                return covers
 
 
 if __name__ == '__main__':
@@ -261,7 +203,7 @@ if __name__ == '__main__':
     def printResult(result):
 
         if result:
-            nbm.Logger.msg('Result Success :)')
+            nbm.Logger.msg('Result Success :)\t\t{}'.format(str(result)))
 
         else:
             nbm.Logger.err('Result Failed :(')
@@ -271,20 +213,58 @@ if __name__ == '__main__':
     # Main Test Function
     def main():
 
-        path = '/home/darren/Development/Testing/ImageURLs/unknown.mp3'
+        def getTags(_file):
+
+            song = taglib.File(_file)
+            tags = song.tags
+
+            try:
+                Logger.msg('Tags: {}'.format(tags))
+                return {
+                    'title': tags['TITLE'][0].encode('utf8'),
+                    'artist': tags['ARTIST'][0].encode('utf8'),
+                    'album': tags['ALBUM'][0].encode('utf8'),
+                    'genre': tags['GENRE'][0].encode('utf8'),
+                    'art': False
+                }
+            except Exception as err:
+
+                Logger.error('Error on file {} - {}'.format(
+                    str(_file),
+                    err)
+                )
+
+            return False
+
+        def loopingPrint(text):
+            print(text)
+
+        t = task.LoopingCall(loopingPrint, 'Nothing Yet')
+        t.start(0.5)
+
+        # path = '/home/darren/Development/Testing/ImageURLs/unknown.mp3'
         # path = '/home/darren/Development/Testing/ImageURLs/unknown1.mp3'
         # path = '/home/darren/Development/Testing/ImageURLs/unknown2.mp3'
         # path = '/home/darren/Development/Testing/ImageURLs/unknown3.mp3'
         # path = '/home/darren/Development/Testing/ImageURLs/unknown4.mp3'
 
-        # Callbacks / Errbacks
-        d = nbm.fingerPrint(path)
-        d.addCallback(json.loads)
-        d.addErrback(nbm.fpFail)
-        d.addCallback(nbm.parseDetails)
-        d.addErrback(nbm.parseFail)
-        d.addCallback(nbm.metaData)
-        d.addBoth(printResult)
+        # path = '/home/darren/Development/Testing/ImageURLs/unknown1.flac'
+        # path = '/home/darren/Development/Testing/ImageURLs/unknown2.flac'
+        # path = '/home/darren/Development/Testing/ImageURLs/unknown3.flac'
+        # path = '/home/darren/Development/Testing/ImageURLs/unknown4.flac'
+        path = '/home/darren/Development/Testing/ImageURLs/unknown5.flac'
+
+        # data = {'artist': 'radiohead', 'album': 'the bends'}
+
+        data = getTags(path)
+
+        Logger.msg('Trying to retrieve data for: {}\t\t{}'.format(
+            data['artist'],
+            data['album'])
+        )
+
+        d = threads.deferToThread(nbm.getMetaDetails, data)
+        d.addCallback(printResult)
 
     reactor.callLater(0, main)
     reactor.run()

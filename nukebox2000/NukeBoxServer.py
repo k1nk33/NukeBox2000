@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Main Twisted Imports
-from twisted.internet import reactor, protocol
+from twisted.internet import reactor, protocol, threads
 # from twisted.internet.threads import deferToThread
 from twisted.protocols.basic import LineReceiver
 
@@ -16,7 +16,6 @@ import vlc
 import time
 import pickle
 import signal
-import subprocess
 import sys
 
 from mutagen.id3 import ID3
@@ -96,7 +95,7 @@ class NukeBoxProtocol(LineReceiver):
         # If the user exists in the user dictionary, remove the value
         # associated with them
 
-        print('Connection Lost')
+        self.factory.Logger.msg('Connection Lost: -> {} <-'.format(reason))
 
         # if self.busy:
 
@@ -117,11 +116,7 @@ class NukeBoxProtocol(LineReceiver):
           - Directs New User Instances to the Factory "On Data" method
         '''
 
-        # self.factory.Logger.msg('Received: -> {} <- :|'.format(str(data)))
-        # self.busy = True
-        obj = pickle.loads(data)
-
-        self.factory.onData(self, obj)
+        self.factory.onData(self, pickle.loads(data))
 
     def rawDataReceived(self, data):
 
@@ -360,6 +355,10 @@ class NukeBoxFactory(protocol.ServerFactory):
           - Returns no value
         '''
 
+        self.Logger.msg('Registering New Client')
+
+        # self.Logger.msg('Received -> {} <-'.format(data))
+
         client = data["name"]
         mac_id = data['mac_id']
 
@@ -383,6 +382,7 @@ class NukeBoxFactory(protocol.ServerFactory):
         )
 
         self.Logger.msg('Created User: {}'.format(user))
+        self.Logger.msg('ID: {}'.format(mac_id))
 
         # Set the User Sate to Registered
         protocol.state = 'Reg'
@@ -419,9 +419,10 @@ class NukeBoxFactory(protocol.ServerFactory):
         # If the "Func" key is "file"
         if data['func'] == 'file':
 
-            # Sets the Instance Filename & File size
+            # Sets the Protocol Instance Filename & File size
             protocol.fname = os.path.basename(data["filename"])
             protocol.sizeTotal = data["size"]
+            protocol.tags = data['tags']
 
             self.Logger.msg('File -> {} <- Incoming...'.format(
                 protocol.fname)
@@ -454,29 +455,19 @@ class NukeBoxFactory(protocol.ServerFactory):
           - Calls NF.onFile Method in separate thread
         '''
 
-        temp_f = protocol.temp_f_name
-        ip = protocol.ip
-        nbdb = protocol.nbdb
+        # temp_f = protocol.temp_f_name
+        # ip = protocol.ip
+        # nbdb = protocol.nbdb
 
         # Create a New File Obj & Run it's "onFile" Method in a Thread
         # Some of these variables should go !!!
 
         self.Logger.msg('Creating New File...')
-        with Closer(
-            NewFile(
-                self,
-                protocol,
-                temp_f,
-                ip,
-                nbdb
-            )
-        ) as new_file:
+        new_file = NewFile(self, protocol)
 
-            if self.running:
+        if self.running:
 
-                reactor.callInThread(new_file.onFile)
-                self.num_threads += 1
-                self.threads.append(new_file)
+            reactor.callInThread(new_file.onFile)
 
         self.Logger.msg('New File sent to Thread :)')
 
@@ -499,19 +490,21 @@ class NewFile():
     '''
 
     # New File Constructor Method
-    def __init__(self, factory, protocol, file, ip, nbdb):
+    def __init__(self, factory, protocol):
         '''
         B{Constructor} Method for New Files
         '''
 
         # Required Instance Variables
-        # self.d = d
         self.factory = factory
         self.protocol = protocol
-        self.file = file
+        self.nbdb = protocol.nbdb
+
+        self.file = protocol.temp_f_name
+        _, self.extension = os.path.splitext(self.file)
         self.file_data = {'art': None}
-        self.base_url = 'http://{}:8888/'.format(str(ip))
-        self.nbdb = nbdb
+
+        self.base_url = 'http://{}:8888/'.format(str(protocol.ip))
 
         self.Logger = self.factory.Logger
         self.Logger.msg('New File Created :)')
@@ -534,63 +527,50 @@ class NewFile():
         # Try to retrieve some metadata
         try:
 
-            media = ID3(self.file)
+            tags = self.protocol.tags
+            self.file_data['artist'] = tags['artist']
+            self.file_data['album'] = tags['album']
+            self.file_data['track'] = tags['title']
 
-            # Write the Metadata to the Instance Dict
-            self.file_data['artist'] = str(media['TPE1'].text[0])
-            self.file_data['track'] = str(media['TIT2'].text[0])
+            if 'genre' in tags:
 
-            # # Program can hit error here - TCON etc.
+                self.file_data['genre'] = tags['genre']
 
-            if 'TCON' in media:
-                self.file_data['genre'] = str(media['TCON'].text[0])
+            self.meta = True
 
-            if 'TALB' in media:
-                self.file_data['album'] = str(media['TALB'].text[0])
+            if tags['art']:
 
-            # Check for Embedded Cover Art
-            art = False
+                # Check for Embedded Cover Art
+                media = ID3(self.file)
 
-            for i in media:
+                for i in media:
 
-                # If Embedded Art
-                if i.startswith('APIC'):
+                    # If Embedded Art
+                    if i.startswith('APIC'):
 
-                    self.file_data['art'] = media[i].data
-                    art = True
-                    self.meta = False
+                        self.file_data['art'] = media[i].data
+                        self.Logger.msg('Embedded Cover Art Found')
+                        self.meta = False
 
-                    self.Logger.msg('Embedded Cover Art Found')
+                return self.metaProcess()
 
-                    self.metaProcess()
+            # No Embedded Art
+            nbm = NukeBoxMeta(self.Logger)
 
-            # If there is no art embedded
-            if not art:
+            self.Logger.msg('Current File Data is-> {}'.format(self.file_data))
 
-                import json
+            d = threads.deferToThread(
+                nbm.getMetaDetails,
+                self.file_data,
+            )
 
-                self.Logger.msg('Using Alternative Metadata Methods')
-                self.meta = True
+            d.addCallbacks(self.metaResult, self.metaError)
 
-                # Create the custom Metadata Instance
-                nbm = NukeBoxMeta()
+            self.Logger.msg(
+                'Returning Deferred Object'
+            )
 
-                # FP method which returns Twisted Deferred obj.
-                d = nbm.fingerPrint(self.file)
-
-                # Add the various callbacks
-                # which will run when the process returns
-                d.addCallbacks(json.loads, nbm.fpFail)
-                d.addCallback(nbm.parseDetails)
-                d.addCallbacks(nbm.metaData, nbm.parseFail)
-                d.addCallbacks(self.metaResult, self.metaError)
-
-                self.Logger.msg(
-                    'Returning Deferred Object - Something May go Wrong!'
-                )
-
-                # return the Deferred
-                return d
+            return d
 
         # Except if there is No Metadata
         except Exception as err:
@@ -611,7 +591,14 @@ class NewFile():
         self.Logger.msg('Metadata Success :)')
 
         # Set the Cover Art value in the File Data dict
+        # self.file_data['art'] = result
+
+        self.Logger.msg('Art-> {}'.format(result['art']))
+
         self.file_data['art'] = result['art'][0]
+        self.file_data['album'] = result['album']
+
+        self.Logger.msg('Merged Details :)')
 
         # Call the Meta Success method
         self.metaProcess(result)
@@ -671,13 +658,18 @@ class NewFile():
         album = re.sub('[^\w\-_\.]', '-', self.file_data['album'])
 
         # Path to the Validated File
-        dst = os.path.join(self.factory.dir, track + '.mp3')
+        dst = os.path.join(
+            self.factory.dir, track + self.extension
+        )
 
         # If the File does not exist in the Default Directory, Create It
         if not os.path.isfile(dst):
 
-            cmd = 'touch {}'.format(dst)
-            subprocess.call(cmd, shell=True)
+            with open(dst, 'w'):
+                pass
+
+            # cmd = 'touch {}'.format(dst)
+            # subprocess.call(cmd, shell=True)
 
         # If Cover Art Exists
         if not self.meta:
@@ -685,16 +677,8 @@ class NewFile():
             # Build the Path to Cover Art file
             art_file = os.path.join(self.factory.art_dir, album + '.jpeg')
 
-            # If it Does Not Exists, Create it
-            if not os.path.isfile(art_file):
-
-                print('Art File is: {}'.format(art_file))
-
-                cmd = 'touch {}'.format(art_file)
-                subprocess.call(cmd, shell=True)
-
-                with open(art_file, 'w') as art:
-                    art.write(self.file_data['art'])
+            with open(art_file, 'w') as art:
+                art.write(self.file_data['art'])
 
             # Overwrite the Original Entry with the New Path
             self.file_data['art'] = self.base_url + album + '.jpeg'
@@ -703,7 +687,7 @@ class NewFile():
         try:
 
             move(self.file, dst)
-            self.Logger.msg('File Successfully Moved :)!')
+            self.Logger.msg('File Successfully Moved :)')
 
             # If it Succeeds, Add the Path to the Instance Dict
             self.file_data['path'] = dst
@@ -713,6 +697,7 @@ class NewFile():
 
             self.Logger.err('Error Moving File: {} :('.format(err))
 
+    # Write Data to DB
     def writeToDB(self):
         '''
         B{Write DB Entry Method}
@@ -729,7 +714,6 @@ class NewFile():
             )
 
             self.Logger.msg('New DB File Entry Added! :)')
-            self.Logger.msg('File {} DB id -> {} <- :)'.format(new_file))
 
         # Except When an Entry Already Exists (may not be needed now!)
         except DuplicateKeyError:
@@ -843,10 +827,10 @@ def main():
 
     # Create the Directory Structure Paths
     # Deafault Music Storage
-    default_dir = os.path.join(HOME, 'Music/NukeBox2000')
+    default_dir = os.path.join(HOME, 'Music/.NukeBox2000')
 
     # Cover Art directory (is later served up to Clients)
-    art_dir = os.path.join(HOME, 'Music/NukeBox2000/art')
+    art_dir = os.path.join(HOME, 'Music/.NukeBox2000/art')
 
     # Temp Sandbox while Metadata is retrieved
     temp_dir = '/tmp/NukeBox2000/'

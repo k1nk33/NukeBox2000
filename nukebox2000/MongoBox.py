@@ -11,10 +11,10 @@ class NukeBoxDB():
     B{MongoDB Access} for NukeBox2000
 
       - Provides 4 Methods to NukeBox2000
-        - "createIndex" -> Creates required entry indexes in the DB
-        - "createUser"  -> Creates a new user entry in the DB
-        - "createFile"  -> Creates new file entry in the DB
-        - "getTrack"    -> Retrieve a track from the DB
+        - "ensureIndexes" -> Ensures required indexes for the DB collections
+        - "createUser"    -> Creates a new user entry in the DB
+        - "createFile"    -> Creates new file entry in the DB
+        - "getTrack"      -> Retrieve a track from the DB
     '''
 
     # Constructor
@@ -60,28 +60,12 @@ class NukeBoxDB():
         self.Logger.msg('Ensuring DB Indexes')
         index_test_list = [False, False, False]
 
-        # Create Index on Mac ID
-        try:
-            self.db.users.create_index(
-                [('mac_id', ASCENDING)],
-                unique=True,
-                sparse=True
-            )
+        # Create Index on Mac ID & Files
+        for x, index in enumerate(['mac_id', 'files']):
 
-            self.Logger.msg('Users Collection - MAC ID Index :)')
-            index_test_list[0] = True
-
-        except Exception as err:
-
-            self.Logger.err(
-                'Users Collection - Mac ID Index Error -> {} <-'.format(err)
-            )
-
-        for x, index in enumerate(['files', 'track']):
-            # Create Index on Files
             try:
 
-                self.db.users.create_index(
+                self.db.user.create_index(
                     [(index, ASCENDING)],
                     unique=True,
                     sparse=True
@@ -98,6 +82,23 @@ class NukeBoxDB():
                 self.Logger.err(
                     'Users Collection - Files Index Error -> {} <-'.format(err)
                 )
+
+        # Create Index on Tracks
+        try:
+            self.db.files.create_index(
+                [('track', ASCENDING)],
+                unique=True,
+                sparse=True
+            )
+
+            self.Logger.msg('Files Collection - TRACK Index :)')
+            index_test_list[0] = True
+
+        except Exception as err:
+
+            self.Logger.err(
+                'Users Collection - Files Index Error -> {} <-'.format(err)
+            )
 
         # Solely for Testing
         if self.debug:
@@ -125,7 +126,7 @@ class NukeBoxDB():
         # Users Collection
         users = self.db.users
 
-        # Check to see if the User Exists
+        # Check if the User Exists
         try:
 
             _id = users.find_one(data)
@@ -160,51 +161,15 @@ class NukeBoxDB():
             file['track'])
         )
 
-        # Files Collection
-        files = self.db.files
+        # # Files Collection
+        # files = self.db.files
 
-        # Check to see if the File Exists - Update if True
-        try:
+        # Check if the File Exists - Update if True
+        value, _id = self.getTrack(file['track'])
 
-            _id = files.find_one(
-                {
-                    'track': file['track']
-                }
-            )
+        if not value:
 
-            _id = _id['_id']
-
-            self.Logger.msg(
-                'File entry for -> {} <- already exists in DB :)'.format(
-                    file['track']
-                )
-            )
-
-            result = files.update_one(
-                {
-                    '_id': _id
-                },
-                {
-                    '$set':
-                    {
-                        'art': file['art']
-                    }
-                },
-                upsert=True
-            )
-
-            self.Logger.msg('File entry for -> {} <- Updated :)'.format(
-                file['track'])
-            )
-
-        # Insert an Entry (if it doesn't exists)
-        except:
-
-            _id = files.insert_one(
-                file
-            ).inserted_id
-
-            self.Logger.msg('File -> {} <- Created :)'.format(file['track']))
+            return _id
 
         self.Logger.msg('Updating Users File(s) Set :)')
 
@@ -215,7 +180,6 @@ class NukeBoxDB():
         try:
             result = users.update_one(
                 {
-                    # 'name': self.name,
                     'mac_id': self.mac_id
                 },
                 {
@@ -273,6 +237,7 @@ class NukeBoxDB():
             self.Logger.msg('No track found :(')
 
             return False, None
+
 
 if __name__ == '__main__':
 
