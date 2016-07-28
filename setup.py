@@ -40,7 +40,8 @@ requirements = [
     'python-vlc',
     'pyacoustid',
     'musicbrainzngs',
-    'service_identity'
+    'service_identity',
+    'pytaglib>=1.2.1'
 ]
 
 test_requirements = [

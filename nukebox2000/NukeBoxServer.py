@@ -2,12 +2,11 @@
 
 # Main Twisted Imports
 from twisted.internet import reactor, protocol, threads
-# from twisted.internet.threads import deferToThread
 from twisted.protocols.basic import LineReceiver
 
 # HTTP Related Twisted Imports
 from twisted.web.server import Site
-from twisted.web.static import File
+from twisted.web.static import File as DirToServe
 
 # Additional Imports
 import os
@@ -18,7 +17,7 @@ import pickle
 import signal
 import sys
 
-from mutagen.id3 import ID3
+from mutagen import id3, flac, File
 from shutil import move
 from socket import SOL_SOCKET, SO_BROADCAST
 from StringIO import StringIO
@@ -294,12 +293,6 @@ class NukeBoxFactory(protocol.ServerFactory):
         # Number of Currently Active Protocols
         self.num_protos = 0
 
-        # Number of Threads
-        self.num_threads = 0
-
-        # Threads
-        self.threads = []
-
         # Default Save Location
         self.dir = default_dir
 
@@ -317,7 +310,7 @@ class NukeBoxFactory(protocol.ServerFactory):
         self.playing = False
 
         # Set up the HTTP Art Server
-        factory = Site(File(self.art_dir))
+        factory = Site(DirToServe(self.art_dir))
         reactor.listenTCP(8888, factory)
         self.Logger.msg('Cover Art Service Up :)')
 
@@ -399,10 +392,10 @@ class NukeBoxFactory(protocol.ServerFactory):
             self.register(protocol, data)
 
         else:
-            self.process(protocol, data)
+            self.funcProcess(protocol, data)
 
     # Process Registered Users Data
-    def process(self, protocol, data):
+    def funcProcess(self, protocol, data):
         '''
         B{Process Method} Used to Determine Response to Data
 
@@ -412,11 +405,10 @@ class NukeBoxFactory(protocol.ServerFactory):
             - Create the Buffer Obj to Buffer Incoming Data
 
           - If a Query is Signalled
-
             - Send the Current Q Info
         '''
 
-        # If the "Func" key is "file"
+        # If the "Func" key is "file" -> File Incoming
         if data['func'] == 'file':
 
             # Sets the Protocol Instance Filename & File size
@@ -434,7 +426,7 @@ class NukeBoxFactory(protocol.ServerFactory):
 
             self.Logger.msg('Line Mode set to "Raw", Buffer Created :)')
 
-        # If the "Func" key is "query"
+        # If the "Func" key is "query" -> Relay Current Q Details
         elif data['func'] == 'query':
 
             self.Logger.msg('The Q has been queried..')
@@ -449,15 +441,8 @@ class NukeBoxFactory(protocol.ServerFactory):
         B{On File Method} to process Incoming File
 
           - Creates a "New File" obj. on each call
-          - Wraps the NF obj. in a "Closer" class
-            - Enters & Exits cleanly - hopefully :|
-
           - Calls NF.onFile Method in separate thread
         '''
-
-        # temp_f = protocol.temp_f_name
-        # ip = protocol.ip
-        # nbdb = protocol.nbdb
 
         # Create a New File Obj & Run it's "onFile" Method in a Thread
         # Some of these variables should go !!!
@@ -535,26 +520,29 @@ class NewFile():
             if 'genre' in tags:
 
                 self.file_data['genre'] = tags['genre']
+                self.Logger.msg('Genre Found')
 
             self.meta = True
 
+            # Check for Embedded Cover Art
             if tags['art']:
 
-                # Check for Embedded Cover Art
-                media = ID3(self.file)
+                self.meta = False
 
-                for i in media:
+                if self.extension == '.flac':
 
-                    # If Embedded Art
-                    if i.startswith('APIC'):
+                    media = flac.FLAC(self.file)
+                    art = media.pictures
 
-                        self.file_data['art'] = media[i].data
-                        self.Logger.msg('Embedded Cover Art Found')
-                        self.meta = False
+                elif self.extension == '.mp3':
 
+                    media = id3.ID3(self.file)
+                    art = media.getall('APIC')
+
+                self.file_data['art'] = art[0].data
                 return self.metaProcess()
 
-            # No Embedded Art
+            # If No Embedded Art Exists
             nbm = NukeBoxMeta(self.Logger)
 
             self.Logger.msg('Current File Data is-> {}'.format(self.file_data))
@@ -591,8 +579,6 @@ class NewFile():
         self.Logger.msg('Metadata Success :)')
 
         # Set the Cover Art value in the File Data dict
-        # self.file_data['art'] = result
-
         self.Logger.msg('Art-> {}'.format(result['art']))
 
         self.file_data['art'] = result['art'][0]
@@ -667,9 +653,6 @@ class NewFile():
 
             with open(dst, 'w'):
                 pass
-
-            # cmd = 'touch {}'.format(dst)
-            # subprocess.call(cmd, shell=True)
 
         # If Cover Art Exists
         if not self.meta:
@@ -779,7 +762,6 @@ class Closer:
             return True
 
 
-# Main Function for testing - Mirrors NukeBox.main
 # Main Functions
 def main():
 

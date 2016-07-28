@@ -1,17 +1,11 @@
 #!/usr/bin/env python
 
-from twisted.internet import reactor, defer, task, threads
-# from twisted.web.client import getPage
-
-# import acoustid
-# import math
-# import json
-import musicbrainzngs
-# from mutagen.mp3 import MP3
-import taglib
-import sys
-
+from twisted.internet import reactor, task, threads
 from fuzzywuzzy import fuzz
+import musicbrainzngs
+import sys
+import taglib
+from mutagen import File, flac, id3
 
 
 class NukeBoxMeta:
@@ -56,11 +50,12 @@ class NukeBoxMeta:
           - Input dict must have an 'artist' & 'album' entry
           - Output dict is the same obj. with additional info
         '''
+
         known_data['artist_id'] = self.getArtistID(known_data)
         known_data['album_id'] = self.getAlbumID(known_data)
         known_data['art'] = self.getCoverArt(known_data)
 
-        self.Logger.msg('Artist ID: {}\t\tAlbum ID: {}\t\tArt: {}'.format(
+        self.Logger.msg('Artist ID: {}\tAlbum ID: {}\tArt: {}'.format(
             known_data['artist_id'],
             known_data['album_id'],
             known_data['art'])
@@ -81,15 +76,9 @@ class NukeBoxMeta:
 
         for x, r in enumerate(result['artist-list']):
 
-            # Added attempt to make a match if search is anbiguous
+            # Added attempt to make a match if search is ambiguous
             # eg. (more than 1 artist called "X")
-            # if 'disambiguation' in r:
             try:
-
-                self.Logger.msg('Genre-> {} : Disambig-> {}'.format(
-                    known_data['genre'].lower(),
-                    r['disambiguation'].lower())
-                )
 
                 if 'genre' in known_data:
 
@@ -106,9 +95,10 @@ class NukeBoxMeta:
 
                 continue
 
-        self.Logger.msg('Returning Artist ID - {}'.format(
+        self.Logger.msg('Returning Fallback Artist ID - {}'.format(
             result['artist-list'][0]['id'])
         )
+
         # Return a default result if no other match is made
         return result['artist-list'][0]['id']
 
@@ -132,7 +122,6 @@ class NukeBoxMeta:
         )
 
         current_best_ratio = 0
-        # current_best_match = ''
 
         for release_grp in result['artist']['release-group-list']:
 
@@ -143,27 +132,23 @@ class NukeBoxMeta:
 
             self.Logger.msg('Ratio-> {}'.format(ratio))
 
-            # if ratio > 50:
-
-            #     self.Logger.msg('Match Found')
-
-            #     current_best_match = release_grp['id']
-            #     break
-
-            # else:
             if current_best_ratio < ratio:
 
                 current_best_ratio = ratio
                 current_best_match = release_grp['id']
+
+                if current_best_ratio == 100:
+                    break
 
                 self.Logger.msg('Better Ratio Found')
                 continue
 
             self.Logger.msg('Better Ratio in Storage')
 
-            self.Logger.msg('Album ID-> {}'.format(current_best_match))
+        self.Logger.msg('Returning Current Best Match-> {}'.format(
+            current_best_match)
+        )
 
-        self.Logger.msg('Returning Current Best match')
         return current_best_match
 
     # Retrieve Cover Art URL
@@ -175,7 +160,10 @@ class NukeBoxMeta:
         '''
 
         self.Logger.msg('Trying Cover Art for Album - {}'.format(
-            known_data['album_id']))
+            known_data['album_id'])
+        )
+
+        # Blocking Call to MBrainz
         cover_result = musicbrainzngs.get_release_group_image_list(
             known_data['album_id']
         )
@@ -189,6 +177,8 @@ class NukeBoxMeta:
                 self.Logger.msg('Approved front image found :)')
                 covers.append(image["thumbnails"]["large"])
 
+                # Returns a single cover as of now but this can be edited to
+                # grab more covers
                 return covers
 
 
@@ -215,18 +205,18 @@ if __name__ == '__main__':
 
         def getTags(_file):
 
-            song = taglib.File(_file)
-            tags = song.tags
-
             try:
-                Logger.msg('Tags: {}'.format(tags))
+
+                tags = File(_file, easy=True)
+
                 return {
                     'title': tags['TITLE'][0].encode('utf8'),
                     'artist': tags['ARTIST'][0].encode('utf8'),
                     'album': tags['ALBUM'][0].encode('utf8'),
                     'genre': tags['GENRE'][0].encode('utf8'),
-                    'art': False
+                    'art': hasEmbeddedArt(_file)
                 }
+
             except Exception as err:
 
                 Logger.error('Error on file {} - {}'.format(
@@ -234,37 +224,62 @@ if __name__ == '__main__':
                     err)
                 )
 
+                return False
+
+        def hasEmbeddedArt(_file):
+            '''
+            '''
+
+            if '.flac' in _file:
+
+                media = flac.FLAC(_file)
+
+                try:
+                    if media.pictures[0].data:
+                        return True
+
+                except:
+                    return False
+
+            else:
+
+                media = id3.ID3(_file)
+                for i in media:
+                    if i.startswith('APIC'):
+                        return True
+
             return False
 
-        def loopingPrint(text):
-            print(text)
+        paths = [
+            '/home/darren/Development/Testing/ImageURLs/unknown.mp3',
+            '/home/darren/Development/Testing/ImageURLs/unknown1.mp3',
+            '/home/darren/Development/Testing/ImageURLs/unknown2.mp3',
+            '/home/darren/Development/Testing/ImageURLs/unknown3.mp3',
+            '/home/darren/Development/Testing/ImageURLs/unknown4.mp3',
+            '/home/darren/Development/Testing/ImageURLs/unknown5.mp3',
+            '/home/darren/Development/Testing/ImageURLs/unknown6.mp3',
+            '/home/darren/Development/Testing/ImageURLs/unknown1.flac',
+            '/home/darren/Development/Testing/ImageURLs/unknown2.flac',
+            '/home/darren/Development/Testing/ImageURLs/unknown3.flac',
+            '/home/darren/Development/Testing/ImageURLs/unknown4.flac',
+            '/home/darren/Development/Testing/ImageURLs/unknown5.flac'
+        ]
 
-        t = task.LoopingCall(loopingPrint, 'Nothing Yet')
-        t.start(0.5)
+        for path in paths:
 
-        # path = '/home/darren/Development/Testing/ImageURLs/unknown.mp3'
-        # path = '/home/darren/Development/Testing/ImageURLs/unknown1.mp3'
-        # path = '/home/darren/Development/Testing/ImageURLs/unknown2.mp3'
-        # path = '/home/darren/Development/Testing/ImageURLs/unknown3.mp3'
-        # path = '/home/darren/Development/Testing/ImageURLs/unknown4.mp3'
+            data = getTags(path)
 
-        # path = '/home/darren/Development/Testing/ImageURLs/unknown1.flac'
-        # path = '/home/darren/Development/Testing/ImageURLs/unknown2.flac'
-        # path = '/home/darren/Development/Testing/ImageURLs/unknown3.flac'
-        # path = '/home/darren/Development/Testing/ImageURLs/unknown4.flac'
-        path = '/home/darren/Development/Testing/ImageURLs/unknown5.flac'
+            if not data['art']:
 
-        # data = {'artist': 'radiohead', 'album': 'the bends'}
+                Logger.msg('Trying to retrieve data for: {}\t\t{}'.format(
+                    data['artist'],
+                    data['album'])
+                )
 
-        data = getTags(path)
+                Logger.msg('Data-> {}'.format(data))
 
-        Logger.msg('Trying to retrieve data for: {}\t\t{}'.format(
-            data['artist'],
-            data['album'])
-        )
-
-        d = threads.deferToThread(nbm.getMetaDetails, data)
-        d.addCallback(printResult)
+                d = threads.deferToThread(nbm.getMetaDetails, data)
+                d.addCallback(printResult)
 
     reactor.callLater(0, main)
     reactor.run()
