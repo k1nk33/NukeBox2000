@@ -17,7 +17,7 @@ from nukebox2000.NukeBoxQueue import NukeBoxQueue
 class TestNukeBoxQueue(unittest.TestCase):
 
     '''
-    B{NukeBoxQueue} Test Case 001 & 002
+    B{NukeBoxQueue} Test Case 001 (Linear) & 002 (Non-linear)
 
     Tests Adding & Removing Items from the Queue, both in a linear
     & non-linear way. The Q obj. has an associated "info" dict which

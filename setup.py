@@ -38,10 +38,8 @@ requirements = [
     'Twisted>=16.2.0',
     'zope.interface>=4.1.3',
     'python-vlc',
-    'pyacoustid',
     'musicbrainzngs',
     'service_identity',
-    'pytaglib>=1.2.1'
 ]
 
 test_requirements = [

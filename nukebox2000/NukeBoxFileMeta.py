@@ -174,11 +174,15 @@ class NukeBoxMeta:
 
             if "Front" in image["types"] and image["approved"]:
 
-                self.Logger.msg('Approved front image found :)')
+                self.Logger.msg('Approved front image found {} :)'.format(
+                    image["thumbnails"]["large"])
+                )
                 covers.append(image["thumbnails"]["large"])
 
                 # Returns a single cover as of now but this can be edited to
                 # grab more covers
+                # self.Logger.msg(covers[0])
+                
                 return covers
 
 
